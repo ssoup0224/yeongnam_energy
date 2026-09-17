@@ -1,0 +1,149 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import PageHero from "@/components/PageHero";
+import { SITE } from "@/lib/site";
+import {
+  IconAlert,
+  IconArrowRight,
+  IconFlame,
+  IconPhone,
+  IconShield,
+} from "@/components/Icons";
+
+export const metadata: Metadata = {
+  title: "가스 안전사용 요령",
+  description: "가스 누출 시 행동요령과 평소 안전 점검 방법을 안내합니다.",
+};
+
+const EMERGENCY = [
+  { t: "밸브를 잠그세요", d: "가스레인지 중간밸브와 계량기 밸브를 모두 잠급니다." },
+  { t: "창문을 여세요", d: "환풍기·선풍기는 쓰지 말고 창문과 문을 열어 자연 환기합니다." },
+  { t: "전기는 만지지 마세요", d: "스위치, 콘센트, 휴대폰 충전기 — 작은 불꽃도 위험합니다." },
+  { t: "밖에서 신고하세요", d: `건물 밖으로 나온 뒤 ${SITE.safetyLine} 또는 119로 연락합니다.` },
+];
+
+const HABITS = [
+  { t: "사용 전", d: "가스 냄새가 나는지 확인하고, 창문을 열어 환기한 뒤 불을 켭니다." },
+  { t: "사용 중", d: "파란 불꽃이 유지되는지 봅니다. 붉은 불꽃은 불완전연소 신호입니다." },
+  { t: "사용 후", d: "중간밸브까지 잠급니다. 장기간 집을 비울 땐 계량기 밸브도 잠급니다." },
+  { t: "매월 1회", d: "비눗물을 연결부에 발라 거품이 생기는지 확인합니다." },
+];
+
+const DONT = [
+  "가스레인지 주변에 종이·행주·기름을 두지 마세요",
+  "호스를 개조하거나 임의로 늘이지 마세요",
+  "보일러 배기통이 빠지거나 찌그러졌는지 확인하세요",
+  "환기구를 옷장·가구로 막지 마세요",
+];
+
+export default function SafetyPage() {
+  return (
+    <>
+      <PageHero
+        title="가스 안전사용 요령"
+        lead="가스는 바르게 쓰면 안전합니다. 냄새가 날 때의 행동요령부터 먼저 확인하세요."
+        crumbs={[{ label: "안전·점검", href: "/safety" }, { label: "가스 안전사용 요령" }]}
+        tone="brand"
+      />
+
+      {/* Emergency */}
+      <section aria-labelledby="emg" className="shell py-10 lg:py-14">
+        <div className="rounded-[1.25rem] border-2 border-sk-red-300 bg-sk-red-50 p-5 lg:p-8">
+          <p className="inline-flex items-center gap-2 rounded-full bg-sk-red-500 px-3.5 py-1.5 text-[0.8125rem] font-extrabold text-white">
+            <IconAlert className="size-4" /> 가스 냄새가 날 때
+          </p>
+          <h2 id="emg" className="mt-3 text-xl font-extrabold text-ink-900 sm:text-2xl">
+            이 순서대로 하세요
+          </h2>
+
+          <ol className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {EMERGENCY.map((s, i) => (
+              <li key={s.t} className="rounded-2xl border border-sk-red-200 bg-white p-5">
+                <span className="flex size-9 items-center justify-center rounded-full sk-gradient text-[0.9375rem] font-extrabold text-white">
+                  {i + 1}
+                </span>
+                <h3 className="mt-3.5 text-[1rem] font-extrabold text-ink-900">{s.t}</h3>
+                <p className="mt-1.5 text-[0.875rem] leading-relaxed text-ink-600">{s.d}</p>
+              </li>
+            ))}
+          </ol>
+
+          <a
+            href={`tel:${SITE.safetyLine}`}
+            className="mt-5 flex min-h-15 items-center justify-center gap-3 rounded-xl bg-sk-red-500 px-6 py-4 text-xl font-extrabold text-white transition hover:bg-sk-red-600"
+          >
+            <IconPhone className="size-6" /> {SITE.safetyLine} 신고
+          </a>
+          <p className="mt-2 text-center text-[0.8125rem] text-ink-600">
+            24시간 연중무휴 · 화재·폭발 위험이 있으면 먼저 119
+          </p>
+        </div>
+      </section>
+
+      {/* Daily habits */}
+      <section aria-labelledby="habit" className="shell pb-10 lg:pb-14">
+        <h2 id="habit" className="flex items-center gap-2 text-xl font-extrabold text-ink-900 sm:text-2xl">
+          <IconShield className="size-6 text-sk-red-500" />
+          평소 이렇게 쓰세요
+        </h2>
+        <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {HABITS.map((h) => (
+            <li key={h.t} className="rounded-2xl border border-ink-200 bg-white p-5">
+              <span className="inline-block rounded-full bg-ink-100 px-3 py-1 text-[0.75rem] font-extrabold text-ink-700">
+                {h.t}
+              </span>
+              <p className="mt-3 text-[0.875rem] leading-relaxed text-ink-700">{h.d}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Don'ts */}
+      <section aria-labelledby="dont" className="shell pb-10 lg:pb-14">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr]">
+          <div className="rounded-[1.25rem] border border-ink-200 bg-white p-5 lg:p-7">
+            <h2 id="dont" className="flex items-center gap-2 text-lg font-extrabold text-ink-900">
+              <IconFlame className="size-5 text-sk-orange-500" />
+              이것만은 피해주세요
+            </h2>
+            <ul className="mt-4 space-y-3">
+              {DONT.map((d) => (
+                <li key={d} className="flex items-start gap-3">
+                  <span
+                    aria-hidden
+                    className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-sk-red-100 text-[0.6875rem] font-extrabold text-sk-red-600"
+                  >
+                    ✕
+                  </span>
+                  <span className="text-[0.9375rem] leading-relaxed text-ink-700">{d}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="rounded-[1.25rem] border border-ink-200 bg-white p-5 lg:p-7">
+            <h2 className="text-lg font-extrabold text-ink-900">관련 안내</h2>
+            <ul className="mt-4 space-y-2">
+              {[
+                { label: "가스시설 정기 점검 안내", href: "/safety/inspection" },
+                { label: "안전점검 SMS 사전안내 신청", href: "/safety/sms" },
+                { label: "자가검침 입력하기", href: "/safety/meter" },
+                { label: "가스누출 신고 접수", href: "/safety/report" },
+              ].map((l) => (
+                <li key={l.href}>
+                  <Link
+                    href={l.href}
+                    className="group flex min-h-14 items-center gap-3 rounded-xl border border-ink-200 px-4 text-[0.9375rem] font-bold text-ink-800 transition hover:border-sk-red-300 hover:bg-sk-red-50"
+                  >
+                    {l.label}
+                    <IconArrowRight className="ml-auto size-4 text-ink-300 transition group-hover:translate-x-1 group-hover:text-sk-red-500" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}

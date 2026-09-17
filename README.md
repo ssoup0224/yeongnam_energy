@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 영남에너지서비스(포항) 홈페이지 리디자인
 
-## Getting Started
+`https://www.skens.com/m/kr/pohang/main/index.do` 를 인간공학 관점에서 다시 만든 프로토타입입니다.
 
-First, run the development server:
+- **스택** — Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4
+- **실행** — `npm run dev` → http://localhost:3000
+- **빌드** — `npm run build` (36개 라우트 정적 생성)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 1. 색상 — SK CI
+
+SK 그룹 로고 '행복날개'의 두 색을 그대로 브랜드 축으로 삼았습니다.
+
+| 토큰 | 값 | 용도 |
+| --- | --- | --- |
+| `--color-sk-red-500` | `#EA002C` | 주요 액션, 강조, 긴급 |
+| `--color-sk-orange-500` | `#FF7A00` | 보조 강조, 그라데이션 끝점 |
+| `--color-ink-*` | 중성 회색 9단계 | 본문·배경·테두리 |
+
+빨강↔주황 그라데이션(`.sk-gradient`)은 로고의 두 날개를 그대로 옮긴 것으로,
+CTA 버튼·숫자 강조·페이지 헤더에만 제한적으로 씁니다.
+원본 사이트의 어두운 적갈색 배경은 걷어내고, 색은 **의미가 있는 곳에만** 남겼습니다.
+
+## 2. 참고한 사이트에서 가져온 것
+
+| 출처 | 가져온 패턴 |
+| --- | --- |
+| **한전ON** | 흰 카드 + 큰 아이콘 타일의 '자주 찾는 서비스', 로그인 유도 카드, 모바일 하단 탭바 |
+| **정부24** | 히어로의 대형 검색창 + 추천 칩, 카드 안에 탭을 두는 구성, 넉넉한 여백 |
+| **고용24** | 중앙 정렬 헤드라인과 검색 중심 진입, 상단 고정 GNB + 메가메뉴 |
+
+## 3. 첫 화면은 5개 섹션만
+
+리디자인 1차에서는 홈에 8개 섹션(4,222px)을 넣었는데, 도시가스 홈페이지에
+오는 사람 대부분은 **이미 목적 하나를 갖고** 옵니다. 스크롤을 요구하는 만큼
+목적 달성이 늦어질 뿐이라, 다음 순서의 5개로 줄였습니다 (2,390px, **-43%**).
+
+| 순서 | 섹션 | 역할 |
+| --- | --- | --- |
+| 1 | 중요 공지 티커 | 지금 꼭 알아야 할 것 |
+| 2 | 검색 + 상황 칩 | 내 업무 찾기 |
+| 3 | 자주 찾는 서비스 8칸 | 내 업무 하기 |
+| 4 | 로그인 · 긴급신고 | 조회하기 / 위급할 때 |
+| 5 | 공지 · 고객센터 | 소식과 도움 |
+
+**지운 게 아니라 옮겼습니다.** 없앤 3개 섹션은 각자 제 페이지로 갔고,
+GNB·푸터·하단 탭바에서 그대로 닿습니다.
+
+- 상황별 안내 4단계 → **`/guide`** (하단 탭바 '상황별 안내'에 배치)
+- 서비스센터 목록 → **`/centers`** (이미 검색 기능이 있는 전용 페이지)
+- 사업 소개 5종 → **`/about`** (설명이 더 자세한 원래 자리)
+
+홈에는 대신 **상황 칩 4개**(이사할 때 / 요금을 낼 때 / 가스 냄새가 날 때 /
+안전점검을 받을 때)만 남겼습니다. 검색창 바로 아래라 "무엇을 검색해야 할지
+모르겠는" 사용자가 그다음 행동을 바로 찾습니다.
+
+그 밖에 덜어낸 것:
+- 타일의 '인기' 배지 — 선택에 도움이 안 되는 시각적 잡음
+- 히어로의 배지·설명 문단 — 제목과 검색창이 이미 같은 말을 함
+- 공지/FAQ 탭 전환 — 홈에서는 공지 4건만, FAQ는 `/support/faq`에서
+- 긴급 카드의 단계별 설명문 — 네 단어짜리 단계만 남기고 전문은 `/safety`로
+
+## 4. 인간공학 관점의 주요 변경
+
+**① 팝업 공지 → 닫을 수 있는 인라인 티커**
+원본은 진입 즉시 전체 화면 모달이 본문을 가립니다. 대신 상단 티커로 바꾸고
+**정지 버튼과 닫기 버튼**을 붙였습니다 (WCAG 2.2.2 — 자동으로 움직이는 콘텐츠는 멈출 수 있어야 함).
+
+**② 메뉴 이름 대신 상황으로 찾기**
+"전출신청"이라는 단어를 모르는 사용자가 "이사할 때"는 고를 수 있습니다.
+홈의 상황 칩에서 `/guide`로 들어가면 4개 상황 × **1→2→3→4 단계**가 번호와 함께 나옵니다.
+(인식(recognition)이 회상(recall)보다 쉽다 — Nielsen 휴리스틱 #6)
+
+**③ 긴급 정보의 우선순위 상향**
+가스 누출 행동요령을 메인 상단 카드로 끌어올리고, 순서를 번호로 고정했습니다.
+신고 번호는 **어느 화면에서든** 상단 유틸바·푸터·모바일 드로어에서 한 번에 닿습니다.
+
+**④ 터치 타깃 — 최소 44px, 실제 적용 48~52px**
+모든 버튼·입력·링크에 `min-h-11`(44px) 이상, 주요 액션은 `min-h-13`(52px).
+모바일 하단 탭바는 64px입니다.
+
+**⑤ 글자 크기 조절 (가/가/가)**
+`--ui-scale` 토큰 하나로 100% / 112.5% / 125%를 전환하며 `localStorage`에 저장됩니다.
+rem 기반 레이아웃이라 125%에서도 깨지지 않습니다.
+
+**⑥ 오류 메시지 — 무엇이, 왜, 어떻게**
+"입력 오류"가 아니라 "연락처를 010-0000-0000 형식으로 입력해 주세요."
+`role="alert"` + `aria-invalid` + 색 외에 아이콘까지 써서 색각 이상에도 구분됩니다.
+
+**⑦ 다단계 폼의 현재 위치 표시**
+전입/전출 신청을 3단계로 쪼개고 진행 표시줄(`aria-current="step"`)을 얹었습니다.
+마지막 단계에서 입력값을 **되돌아볼 수 있게** 요약을 보여준 뒤 접수합니다.
+
+**⑧ 접근성 기본기**
+- 본문 바로가기(skip link)
+- `lang="ko"`, 시맨틱 랜드마크(`header`/`nav`/`main`/`footer`), breadcrumb `aria-label`
+- 모든 포커스에 3px 고동색 아웃라인 (키보드 사용자 위치 항상 보임)
+- 탭 컴포넌트는 `role="tablist"` + 좌우 화살표 키 이동
+- `prefers-reduced-motion` 존중 (애니메이션 무효화)
+- 검색 결과 0건, 목록 0건일 때 **다음 행동을 제안**하는 빈 상태
+
+## 5. 구조
+
+```
+src/
+  app/            37개 라우트 (핵심 화면은 실동작, 나머지는 ComingSoon 안내)
+  components/     헤더·푸터·홈 섹션·폼·검색 위젯
+  lib/site.ts     메뉴·공지·FAQ·센터 등 모든 콘텐츠 데이터
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+실제로 동작하는 화면: 홈, 상황별 안내(`/guide`), 요금 조회(`/bill`),
+실시간 요금계산기(`/bill/calculator`), 전입·전출 신청(`/move/in`, `/move/out`),
+서비스센터 찾기(`/centers`), 안전사용 요령(`/safety`),
+공지·FAQ(`/support`, `/support/faq`), 통합검색(`/search`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+> 요금 단가·고객 정보·접수번호는 시연용 더미 데이터입니다.
