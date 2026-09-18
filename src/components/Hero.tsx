@@ -21,16 +21,20 @@ export default function Hero() {
       aria-labelledby="hero-title"
       className="relative overflow-hidden border-b border-ink-200 bg-white"
     >
-      {/* Soft brand wash — decorative only */}
+      {/* Soft brand wash — decorative only. Centred behind the column so the
+         colour sits under the content instead of drifting to the edges. */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -right-24 -top-32 size-[28rem] rounded-full bg-sk-orange-100 opacity-60 blur-3xl" />
-        <div className="absolute -left-32 top-10 size-[24rem] rounded-full bg-sk-red-100 opacity-50 blur-3xl" />
+        <div className="absolute left-1/2 top-[-18rem] size-[46rem] -translate-x-1/2 rounded-full bg-sk-orange-100 opacity-55 blur-3xl" />
+        <div className="absolute left-[15%] top-[-8rem] size-[26rem] rounded-full bg-sk-red-100 opacity-45 blur-3xl" />
+        <div className="absolute right-[12%] top-0 size-[24rem] rounded-full bg-sk-red-100 opacity-35 blur-3xl" />
       </div>
 
-      <div className="shell relative py-9 lg:py-12">
+      {/* One centred column: title, search and shortcuts share an axis, so the
+         eye travels straight down instead of across an empty right half. */}
+      <div className="shell relative flex flex-col items-center py-12 text-center lg:py-16">
         <h1
           id="hero-title"
-          className="text-[1.75rem] font-extrabold leading-[1.25] tracking-tight text-ink-900 sm:text-4xl lg:text-[2.5rem]"
+          className="max-w-3xl text-[1.875rem] font-extrabold leading-[1.25] tracking-tight text-ink-900 sm:text-4xl lg:text-[2.75rem]"
         >
           도시가스 업무,
           <br className="sm:hidden" />
@@ -38,11 +42,15 @@ export default function Hero() {
           끝내세요
         </h1>
 
+        <p className="mt-3 max-w-xl text-[0.9375rem] text-ink-500 sm:text-base">
+          이사·요금·안전점검까지, 필요한 업무를 검색 한 번으로 찾아드립니다.
+        </p>
+
         {/* Search */}
         <form
           role="search"
           action="/search"
-          className="mt-5 max-w-2xl"
+          className="mt-7 w-full max-w-3xl"
           onSubmit={(e) => {
             if (!q.trim()) e.preventDefault();
           }}
@@ -50,7 +58,7 @@ export default function Hero() {
           <label htmlFor="site-search" className="sr-only">
             무엇을 도와드릴까요? 업무 또는 키워드를 입력하세요
           </label>
-          <div className="flex items-center gap-2 rounded-2xl border-2 border-ink-900 bg-white p-1.5 shadow-[0_10px_30px_-18px_rgba(17,21,29,.5)] focus-within:border-sk-red-500">
+          <div className="flex items-center gap-2 rounded-2xl border-2 border-ink-900 bg-white p-1.5 text-left shadow-[0_18px_40px_-24px_rgba(17,21,29,.55)] focus-within:border-sk-red-500">
             <IconSearch className="ml-3 size-5 shrink-0 text-ink-400" />
             <input
               id="site-search"
@@ -70,10 +78,9 @@ export default function Hero() {
               <IconArrowRight className="size-4" />
             </button>
           </div>
-
         </form>
 
-        <ul className="mt-4 flex flex-wrap items-center gap-2">
+        <ul className="mt-5 flex flex-wrap items-center justify-center gap-2">
           <li className="text-[0.8125rem] font-semibold text-ink-500">이럴 땐</li>
           {SITUATIONS.map((s) => (
             <li key={s.label}>
