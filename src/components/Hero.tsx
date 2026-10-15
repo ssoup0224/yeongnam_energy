@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { pick, useLang, useT } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
 import { IconArrowRight, IconSearch } from "./Icons";
 
 /* Entry points phrased as situations, not menu names — people who don't know
@@ -17,7 +18,13 @@ const SITUATIONS = [
 export default function Hero() {
   const { lang } = useLang();
   const t = useT();
+  const { user, ready } = useAuth();
   const [q, setQ] = useState("");
+
+  // Only greet once the saved session is read, so the first render matches
+  // the signed-out server output and hydration stays clean.
+  const signedIn = ready && !!user;
+  const name = user ? pick(user.name, lang) : "";
 
   return (
     <section
@@ -39,7 +46,17 @@ export default function Hero() {
           id="hero-title"
           className="max-w-3xl text-[1.875rem] font-extrabold leading-[1.25] tracking-tight text-ink-900 sm:text-4xl lg:text-[2.75rem]"
         >
-          {lang === "en" ? (
+          {signedIn ? (
+            lang === "en" ? (
+              <>
+                Hello, <span className="sk-gradient-text">{name}</span>
+              </>
+            ) : (
+              <>
+                안녕하세요, <span className="sk-gradient-text">{name}</span>님
+              </>
+            )
+          ) : lang === "en" ? (
             <>
               City-gas tasks,
               <br className="sm:hidden" />
@@ -57,10 +74,15 @@ export default function Hero() {
         </h1>
 
         <p className="mt-3 max-w-xl text-[0.9375rem] text-ink-500 sm:text-base">
-          {t(
-            "이사·요금·안전점검까지, 필요한 업무를 검색 한 번으로 찾아드립니다.",
-            "Moving, billing, safety checks — find the task you need with a single search.",
-          )}
+          {signedIn
+            ? t(
+                "오늘도 안전하고 편리하게 도시가스를 이용하세요.",
+                "Have a safe and easy day with city gas.",
+              )
+            : t(
+                "이사·요금·안전점검까지, 필요한 업무를 검색 한 번으로 찾아드립니다.",
+                "Moving, billing, safety checks — find the task you need with a single search.",
+              )}
         </p>
 
         {/* Search */}
