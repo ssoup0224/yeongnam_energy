@@ -1,20 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { SITE } from "@/lib/site";
-import { pick, useLang, useT } from "@/lib/i18n";
-import { IconAlert, IconArrowRight, IconPhone, IconUser } from "./Icons";
+import { useT } from "@/lib/i18n";
+import { IconArrowRight, IconDoc, IconUser } from "./Icons";
 
-/** Four words per step — the full walkthrough lives on /safety. */
-const STEPS = [
-  { ko: "밸브 잠그기", en: "Close the valve" },
-  { ko: "창문 열기", en: "Open windows" },
-  { ko: "전기 만지지 않기", en: "No electrics" },
-  { ko: "밖에서 신고", en: "Call from outside" },
-];
-
+/**
+ * Signed-out personal block — sits in the same slot as the account summary
+ * when logged in. The emergency SOS now lives in the hero, so this pairs a
+ * sign-in invitation with a "getting started" guide for newcomers.
+ */
 export default function MyPanel() {
-  const { lang } = useLang();
   const t = useT();
 
   return (
@@ -55,39 +50,25 @@ export default function MyPanel() {
         </div>
       </div>
 
-      {/* Emergency */}
-      <div className="rounded-[1.25rem] border-2 border-sk-red-200 bg-sk-red-50 p-6">
-        <h2 className="flex items-center gap-2 text-lg font-extrabold text-ink-900">
-          <IconAlert className="size-5 text-sk-red-500" />
-          {t("가스 냄새가 난다면", "If you smell gas")}
+      {/* Getting started */}
+      <div className="flex flex-col rounded-[1.25rem] border border-ink-200 bg-white p-6">
+        <span className="flex size-11 items-center justify-center rounded-xl bg-sk-orange-50 text-sk-orange-600">
+          <IconDoc className="size-5" />
+        </span>
+        <h2 className="mt-3.5 text-lg font-extrabold text-ink-900">
+          {t("무엇부터 해야 할지 모르겠다면", "Not sure where to start?")}
         </h2>
-
-        <ol className="mt-4 flex flex-wrap items-center gap-x-1.5 gap-y-2">
-          {STEPS.map((step, i) => (
-            <li key={step.ko} className="flex items-center gap-1.5">
-              <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5">
-                <span className="text-[0.6875rem] font-extrabold text-sk-red-600">{i + 1}</span>
-                <span className="text-[0.8125rem] font-bold text-ink-800">{pick(step, lang)}</span>
-              </span>
-              {i < STEPS.length - 1 ? (
-                <IconArrowRight className="size-3 shrink-0 text-sk-red-300" />
-              ) : null}
-            </li>
-          ))}
-        </ol>
-
-        <a
-          href={`tel:${SITE.safetyLine}`}
-          className="mt-5 flex min-h-14 items-center justify-center gap-2.5 rounded-xl bg-sk-red-500 px-5 text-lg font-extrabold text-white transition hover:bg-sk-red-600"
-        >
-          <IconPhone className="size-5" />
-          {SITE.safetyLine} {t("신고", "report")}
-        </a>
+        <p className="mt-2 max-w-sm text-[0.875rem] leading-relaxed text-ink-500">
+          {t(
+            "메뉴 이름을 몰라도 괜찮습니다. 지금 상황을 고르면 처음부터 끝까지 순서대로 안내해 드립니다.",
+            "No need to know the menu names — pick your situation and we'll walk you through it, step by step.",
+          )}
+        </p>
         <Link
-          href="/safety"
-          className="mt-2 flex min-h-10 items-center justify-center gap-1 text-[0.8125rem] font-bold text-ink-600 hover:text-sk-red-700 hover:underline"
+          href="/guide"
+          className="mt-auto inline-flex min-h-12 w-fit items-center gap-2 rounded-xl border-2 border-ink-200 px-5 text-[0.9375rem] font-bold text-ink-800 transition hover:border-sk-red-300 hover:bg-sk-red-50"
         >
-          {t("자세한 안전 행동요령 보기", "See the full safety steps")} <IconArrowRight className="size-3.5" />
+          {t("상황별 안내 보기", "Browse guides by situation")} <IconArrowRight className="size-4" />
         </Link>
       </div>
     </section>
