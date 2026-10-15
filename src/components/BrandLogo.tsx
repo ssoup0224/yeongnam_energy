@@ -6,14 +6,14 @@ export default function BrandLogo({ className = "" }: { className?: string }) {
     <span className={`inline-flex ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/brand/sk-ci-ko.svg"
+        src="/brand/sk-ci-ko.png"
         alt="SK이노베이션 E&S"
         className="only-ko h-full w-auto"
         draggable={false}
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/brand/sk-ci-en.svg"
+        src="/brand/sk-ci-en.png"
         alt="SK innovation E&S"
         className="only-en h-full w-auto"
         draggable={false}

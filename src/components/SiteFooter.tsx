@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { NAV, SITE } from "@/lib/site";
 import { pick, useLang, useT } from "@/lib/i18n";
-import { IconArrowRight, IconPhone, SkWings } from "./Icons";
+import { IconArrowRight, IconPhone } from "./Icons";
 import BrandLogo from "./BrandLogo";
 
 const LEGAL: { label: { ko: string; en: string }; href: string; strong?: boolean }[] = [
@@ -89,17 +89,11 @@ export default function SiteFooter() {
       <div className="border-t border-ink-100">
         <div className="shell flex flex-col gap-5 py-8 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <div className="flex items-center gap-2.5">
-              <SkWings className="h-6 w-10" />
-              <span className="text-base font-extrabold text-ink-900">
-                {pick(SITE.company, lang)}
-                <span className="ml-1 text-sk-red-600">{pick(SITE.region, lang)}</span>
-              </span>
-            </div>
-            {/* Official group CI, swapped by language */}
-            <div className="mt-4 flex items-center gap-2 text-[0.6875rem] text-ink-400">
-              <span>{t("계열사", "A member of")}</span>
-              <BrandLogo className="h-5" />
+            {/* Official SK innovation E&S CI, swapped by language */}
+            <BrandLogo className="h-7" />
+            <div className="mt-3 flex items-center gap-2 text-base font-extrabold text-ink-900">
+              {pick(SITE.company, lang)}
+              <span className="text-sk-red-600">{pick(SITE.region, lang)}</span>
             </div>
             <address className="mt-3 text-[0.8125rem] not-italic leading-relaxed text-ink-500">
               {pick(SITE.address, lang)}

@@ -8,6 +8,7 @@ import { pick, useLang, useT } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import TextSizeControl from "./TextSizeControl";
 import LanguageToggle from "./LanguageToggle";
+import BrandLogo from "./BrandLogo";
 import {
   IconChevron,
   IconClose,
@@ -15,7 +16,6 @@ import {
   IconPhone,
   IconSearch,
   IconUser,
-  SkWings,
 } from "./Icons";
 
 export default function SiteHeader() {
@@ -124,13 +124,15 @@ export default function SiteHeader() {
               `${pick(SITE.company, lang)} ${pick(SITE.region, lang)} — home`,
             )}
           >
-            <SkWings className="h-6 w-10 lg:h-7 lg:w-12" />
+            {/* Official SK innovation E&S CI, swapped by language */}
+            <BrandLogo className="h-6 lg:h-[1.875rem]" />
+            <span className="h-6 w-px bg-ink-200 lg:h-8" aria-hidden />
             <span className="flex flex-col leading-none">
-              <span className="text-[1.0625rem] font-extrabold tracking-tight text-ink-900 lg:text-[1.1875rem]">
+              <span className="text-[0.9375rem] font-extrabold tracking-tight text-ink-900 lg:text-[1.125rem]">
                 {pick(SITE.company, lang)}
               </span>
               <span className="mt-0.5 text-[0.6875rem] font-semibold text-sk-red-600">
-                {pick(SITE.region, lang)} · {pick(SITE.group, lang)}
+                {t(`${pick(SITE.region, lang)} 도시가스`, `${pick(SITE.region, lang)} City Gas`)}
               </span>
             </span>
           </Link>
