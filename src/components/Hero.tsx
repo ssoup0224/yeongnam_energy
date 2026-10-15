@@ -5,6 +5,7 @@ import { useState } from "react";
 import { SITE } from "@/lib/site";
 import { pick, useLang, useT } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
+import AccountCard from "./AccountCard";
 import { IconAlert, IconArrowRight, IconPhone, IconSearch } from "./Icons";
 
 /* Entry points phrased as situations, not menu names — people who don't know
@@ -147,38 +148,42 @@ export default function Hero() {
           </ul>
         </div>
 
-        {/* ── Right: emergency SOS (safety first, for a gas utility) ── */}
-        <aside className="rounded-[1.5rem] border-2 border-sk-red-200 bg-sk-red-50/80 p-6 backdrop-blur-sm lg:p-7">
-          <h2 className="flex items-center gap-2 text-lg font-extrabold text-ink-900">
-            <IconAlert className="size-5 text-sk-red-500" />
-            {t("가스 냄새가 난다면", "If you smell gas")}
-          </h2>
+        {/* ── Right: signed in → account & bill; signed out → safety SOS ── */}
+        {ready && user ? (
+          <AccountCard user={user} />
+        ) : (
+          <aside className="rounded-[1.5rem] border-2 border-sk-red-200 bg-sk-red-50/80 p-6 backdrop-blur-sm lg:p-7">
+            <h2 className="flex items-center gap-2 text-lg font-extrabold text-ink-900">
+              <IconAlert className="size-5 text-sk-red-500" />
+              {t("가스 냄새가 난다면", "If you smell gas")}
+            </h2>
 
-          <ol className="mt-4 grid grid-cols-2 gap-2">
-            {STEPS.map((step, i) => (
-              <li key={step.ko} className="flex items-center gap-2 rounded-xl bg-white px-3 py-2.5">
-                <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-sk-red-100 text-[0.6875rem] font-extrabold text-sk-red-600">
-                  {i + 1}
-                </span>
-                <span className="text-[0.8125rem] font-bold leading-tight text-ink-800">{pick(step, lang)}</span>
-              </li>
-            ))}
-          </ol>
+            <ol className="mt-4 grid grid-cols-2 gap-2">
+              {STEPS.map((step, i) => (
+                <li key={step.ko} className="flex items-center gap-2 rounded-xl bg-white px-3 py-2.5">
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-sk-red-100 text-[0.6875rem] font-extrabold text-sk-red-600">
+                    {i + 1}
+                  </span>
+                  <span className="text-[0.8125rem] font-bold leading-tight text-ink-800">{pick(step, lang)}</span>
+                </li>
+              ))}
+            </ol>
 
-          <a
-            href={`tel:${SITE.safetyLine}`}
-            className="mt-4 flex min-h-14 items-center justify-center gap-2.5 rounded-xl bg-sk-red-500 px-5 text-lg font-extrabold text-white transition hover:bg-sk-red-600"
-          >
-            <IconPhone className="size-5" />
-            {SITE.safetyLine} {t("신고", "SOS")}
-          </a>
-          <Link
-            href="/safety"
-            className="mt-2 flex min-h-10 items-center justify-center gap-1 text-[0.8125rem] font-bold text-ink-600 hover:text-sk-red-700 hover:underline"
-          >
-            {t("자세한 안전 행동요령 보기", "See the full safety steps")} <IconArrowRight className="size-3.5" />
-          </Link>
-        </aside>
+            <a
+              href={`tel:${SITE.safetyLine}`}
+              className="mt-4 flex min-h-14 items-center justify-center gap-2.5 rounded-xl bg-sk-red-500 px-5 text-lg font-extrabold text-white transition hover:bg-sk-red-600"
+            >
+              <IconPhone className="size-5" />
+              {SITE.safetyLine} {t("신고", "SOS")}
+            </a>
+            <Link
+              href="/safety"
+              className="mt-2 flex min-h-10 items-center justify-center gap-1 text-[0.8125rem] font-bold text-ink-600 hover:text-sk-red-700 hover:underline"
+            >
+              {t("자세한 안전 행동요령 보기", "See the full safety steps")} <IconArrowRight className="size-3.5" />
+            </Link>
+          </aside>
+        )}
       </div>
     </section>
   );
