@@ -3,6 +3,8 @@ import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import MobileTabBar from "@/components/MobileTabBar";
+import { LangProvider, langBootScript, T } from "@/lib/i18n";
+import { AuthProvider } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: {
@@ -24,23 +26,30 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" data-lang="ko" suppressHydrationWarning>
       <head>
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
         />
+        {/* Apply the saved language before paint so CSS-driven swaps (logo)
+            and the <html lang> attribute are correct on first frame. */}
+        <script dangerouslySetInnerHTML={{ __html: langBootScript }} />
       </head>
       <body className="antialiased">
-        <a href="#main" className="skip-link">
-          본문 바로가기
-        </a>
-        <SiteHeader />
-        <main id="main" tabIndex={-1}>
-          {children}
-        </main>
-        <SiteFooter />
-        <MobileTabBar />
+        <LangProvider>
+          <AuthProvider>
+            <a href="#main" className="skip-link">
+              <T ko="본문 바로가기" en="Skip to content" />
+            </a>
+            <SiteHeader />
+            <main id="main" tabIndex={-1}>
+              {children}
+            </main>
+            <SiteFooter />
+            <MobileTabBar />
+          </AuthProvider>
+        </LangProvider>
       </body>
     </html>
   );

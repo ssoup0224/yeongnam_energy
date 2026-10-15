@@ -2,22 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { pick, useLang, useT } from "@/lib/i18n";
 import { IconBill, IconCenter, IconDoc, IconHome, IconMenu } from "./Icons";
 
 const TABS = [
-  { href: "/", label: "홈", Icon: IconHome },
-  { href: "/bill", label: "요금·납부", Icon: IconBill },
-  { href: "/guide", label: "상황별 안내", Icon: IconDoc },
-  { href: "/centers", label: "서비스센터", Icon: IconCenter },
-  { href: "/sitemap", label: "전체", Icon: IconMenu },
+  { href: "/", label: { ko: "홈", en: "Home" }, Icon: IconHome },
+  { href: "/bill", label: { ko: "요금·납부", en: "Billing" }, Icon: IconBill },
+  { href: "/guide", label: { ko: "상황별 안내", en: "Guides" }, Icon: IconDoc },
+  { href: "/centers", label: { ko: "서비스센터", en: "Centers" }, Icon: IconCenter },
+  { href: "/sitemap", label: { ko: "전체", en: "All" }, Icon: IconMenu },
 ];
 
 export default function MobileTabBar() {
   const pathname = usePathname();
+  const { lang } = useLang();
+  const t = useT();
 
   return (
     <nav
-      aria-label="빠른 이동"
+      aria-label={t("빠른 이동", "Quick navigation")}
       className="fixed inset-x-0 bottom-0 z-40 border-t border-ink-200 bg-white/97 backdrop-blur lg:hidden no-print"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
@@ -33,7 +36,7 @@ export default function MobileTabBar() {
                   ${active ? "text-sk-red-600" : "text-ink-500"}`}
               >
                 <Icon className="size-[1.375rem]" />
-                {label}
+                {pick(label, lang)}
               </Link>
             </li>
           );

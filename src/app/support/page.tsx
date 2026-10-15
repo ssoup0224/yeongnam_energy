@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
 import { NOTICES } from "@/lib/site";
+import { T } from "@/lib/i18n";
 import { IconArrowRight } from "@/components/Icons";
 
 export const metadata: Metadata = { title: "공지사항" };
@@ -10,9 +11,17 @@ export default function SupportPage() {
   return (
     <>
       <PageHero
-        title="공지사항"
-        lead="요금, 신청 절차, 안전점검 일정 등 알아두시면 좋은 소식을 모았습니다."
-        crumbs={[{ label: "고객지원", href: "/support" }, { label: "공지사항" }]}
+        title={<T ko="공지사항" en="Notices" />}
+        lead={
+          <T
+            ko="요금, 신청 절차, 안전점검 일정 등 알아두시면 좋은 소식을 모았습니다."
+            en="News worth knowing — billing, request steps, safety-inspection schedules and more."
+          />
+        }
+        crumbs={[
+          { label: <T ko="고객지원" en="Support" />, href: "/support" },
+          { label: <T ko="공지사항" en="Notices" /> },
+        ]}
       />
       <div className="shell py-10 lg:py-14">
         <ul className="overflow-hidden rounded-[1.25rem] border border-ink-200 bg-white">
@@ -23,21 +32,21 @@ export default function SupportPage() {
                   className={`mt-0.5 shrink-0 rounded-md px-2.5 py-1 text-[0.75rem] font-extrabold
                     ${n.important ? "bg-sk-red-50 text-sk-red-700" : "bg-ink-100 text-ink-600"}`}
                 >
-                  {n.tag}
+                  <T ko={n.tag.ko} en={n.tag.en} />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2">
-                    {n.important && (
+                    {n.important ? (
                       <span className="rounded bg-ink-900 px-1.5 py-0.5 text-[0.625rem] font-extrabold text-white">
-                        중요
+                        <T ko="중요" en="Important" />
                       </span>
-                    )}
+                    ) : null}
                     <span className="text-[1rem] font-extrabold leading-snug text-ink-900">
-                      {n.title}
+                      <T ko={n.title.ko} en={n.title.en} />
                     </span>
                   </span>
                   <span className="mt-1.5 block text-[0.875rem] leading-relaxed text-ink-500">
-                    {n.summary}
+                    <T ko={n.summary.ko} en={n.summary.en} />
                   </span>
                   <time dateTime={n.date} className="mt-2 block text-[0.75rem] tabular-nums text-ink-400">
                     {n.date.replaceAll("-", ".")}

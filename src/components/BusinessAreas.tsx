@@ -1,10 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { BUSINESS } from "@/lib/site";
+import { pick, useLang, useT } from "@/lib/i18n";
 import {
   IconArrowRight,
   IconBattery,
   IconFlame,
   IconLeaf,
+  IconShield,
   IconSnow,
   IconTruck,
 } from "./Icons";
@@ -15,26 +19,33 @@ const ICONS = {
   "gas-cooling": IconSnow,
   renewable: IconLeaf,
   cng: IconTruck,
+  csr: IconShield,
 } as const;
 
 export default function BusinessAreas() {
+  const { lang } = useLang();
+  const t = useT();
+
   return (
     <section aria-labelledby="biz-title" className="border-y border-ink-200 bg-white">
       <div className="shell py-12 lg:py-16">
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 id="biz-title" className="text-xl font-extrabold tracking-tight text-ink-900 sm:text-2xl">
-              사업 소개
+              {t("사업 소개", "Our business")}
             </h2>
             <p className="mt-1.5 text-sm text-ink-500">
-              포항과 함께 성장하는 영남에너지서비스의 다섯 가지 에너지 사업입니다.
+              {t(
+                "포항과 함께 성장하는 영남에너지서비스의 다섯 가지 에너지 사업입니다.",
+                "The energy businesses Yeongnam Energy Service grows together with Pohang.",
+              )}
             </p>
           </div>
           <Link
             href="/about"
             className="hidden shrink-0 items-center gap-1 rounded-full border border-ink-200 px-4 py-2.5 text-sm font-bold text-ink-700 hover:border-ink-300 sm:inline-flex"
           >
-            회사소개 <IconArrowRight className="size-4" />
+            {t("회사소개", "About us")} <IconArrowRight className="size-4" />
           </Link>
         </div>
 
@@ -50,9 +61,9 @@ export default function BusinessAreas() {
                   <span className="flex size-11 items-center justify-center rounded-xl bg-ink-50 text-ink-700 transition group-hover:bg-sk-orange-500 group-hover:text-white">
                     <Icon className="size-6" />
                   </span>
-                  <span className="mt-4 text-base font-extrabold text-ink-900">{b.name}</span>
+                  <span className="mt-4 text-base font-extrabold text-ink-900">{pick(b.name, lang)}</span>
                   <span className="mt-1.5 text-[0.8125rem] leading-relaxed text-ink-500">
-                    {b.desc}
+                    {pick(b.desc, lang)}
                   </span>
                 </Link>
               </li>

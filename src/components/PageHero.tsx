@@ -1,7 +1,9 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
+import { T } from "@/lib/i18n";
 import { IconChevron, IconHome } from "./Icons";
 
-export type Crumb = { label: string; href?: string };
+export type Crumb = { label: ReactNode; href?: string };
 
 export default function PageHero({
   title,
@@ -9,8 +11,8 @@ export default function PageHero({
   crumbs = [],
   tone = "light",
 }: {
-  title: string;
-  lead?: string;
+  title: ReactNode;
+  lead?: ReactNode;
   crumbs?: Crumb[];
   tone?: "light" | "brand";
 }) {
@@ -21,11 +23,11 @@ export default function PageHero({
         brand ? "sk-gradient border-transparent text-white" : "border-ink-200 bg-white"
       }`}
     >
-      {!brand && (
+      {brand ? null : (
         <div aria-hidden className="pointer-events-none absolute -right-28 -top-28 size-80 rounded-full bg-sk-orange-100 opacity-50 blur-3xl" />
       )}
       <div className="shell relative py-7 lg:py-11">
-        <nav aria-label="현재 위치" className="mb-3">
+        <nav aria-label="Breadcrumb" className="mb-3">
           <ol className="flex flex-wrap items-center gap-1 text-[0.75rem]">
             <li>
               <Link
@@ -35,11 +37,11 @@ export default function PageHero({
                 }`}
               >
                 <IconHome className="size-3.5" />
-                <span className="sr-only">홈</span>
+                <span className="sr-only"><T ko="홈" en="Home" /></span>
               </Link>
             </li>
             {crumbs.map((c, i) => (
-              <li key={c.label} className="flex items-center gap-1">
+              <li key={i} className="flex items-center gap-1">
                 <IconChevron className={`size-3 ${brand ? "text-white/40" : "text-ink-300"}`} />
                 {c.href && i < crumbs.length - 1 ? (
                   <Link
@@ -72,7 +74,7 @@ export default function PageHero({
         >
           {title}
         </h1>
-        {lead && (
+        {lead ? (
           <p
             className={`mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed sm:text-base ${
               brand ? "text-white/85" : "text-ink-600"
@@ -80,7 +82,7 @@ export default function PageHero({
           >
             {lead}
           </p>
-        )}
+        ) : null}
       </div>
     </section>
   );

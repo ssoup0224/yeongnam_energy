@@ -6,10 +6,10 @@ export const metadata: Metadata = { title: "보도자료" };
 export default function Page() {
   return (
     <ComingSoon
-      title={"보도자료"}
-      lead={"영남에너지서비스의 최근 소식입니다."}
-      crumbs={[{ label: "회사소개", href: "/about" }, { label: "보도자료" }]}
-      related={[{ label: "회사 개요", href: "/about" }]}
+      title={{ ko: "보도자료", en: "Press" }}
+      lead={{ ko: "영남에너지서비스의 최근 소식입니다.", en: "The latest news from Yeongnam Energy Service." }}
+      crumbs={[{ label: { ko: "회사소개", en: "Company" }, href: "/about" }, { label: { ko: "보도자료", en: "Press" } }]}
+      related={[{ label: { ko: "회사 개요", en: "Overview" }, href: "/about" }]}
     />
   );
 }

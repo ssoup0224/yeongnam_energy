@@ -1,23 +1,31 @@
 import Hero from "@/components/Hero";
+import HomeView from "@/components/HomeView";
 import MyPanel from "@/components/MyPanel";
 import NewsBoard from "@/components/NewsBoard";
 import NoticeTicker from "@/components/NoticeTicker";
 import QuickServices from "@/components/QuickServices";
 
 /**
- * Five sections, in the order a customer actually needs them:
- * urgent notice → find my task → do my task → get help → read the news.
- * The situation guide, service-center finder and business overview each moved
- * to their own page (/guide, /centers, /about) rather than crowding this one.
+ * Signed out: urgent notice → search hero → quick services → sign-in /
+ * emergency panel → news. Signed in (mock): the personalized dashboard
+ * replaces the marketing block, with the news board kept below.
+ * The situation guide, service-center finder and business overview each
+ * live on their own page (/guide, /centers, /about) rather than here.
  */
 export default function Home() {
   return (
     <>
       <NoticeTicker />
-      <Hero />
-      <QuickServices />
-      <MyPanel />
-      <NewsBoard />
+      <HomeView
+        loggedOut={
+          <>
+            <Hero />
+            <QuickServices />
+            <MyPanel />
+          </>
+        }
+        news={<NewsBoard />}
+      />
     </>
   );
 }

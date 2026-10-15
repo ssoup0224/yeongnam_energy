@@ -163,3 +163,19 @@ body {
 @media print {
   .no-print { display: none !important; }
 }
+
+/* ── Language-based show/hide ─────────────────────────────────────
+   The boot script sets <html data-lang>; these let a Server Component
+   render both variants and reveal only the active one with no JS and
+   no hydration flash. Used mainly for the per-language brand logo.   */
+[data-lang="en"] .only-ko { display: none !important; }
+[data-lang="ko"] .only-en { display: none !important; }
+/* Until the boot script runs, default to Korean visible. */
+:root:not([data-lang="en"]) .only-en { display: none !important; }
+
+/* Usage bars grow from the baseline when the dashboard mounts. */
+@keyframes bar-rise {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+.bar-rise { transform-origin: bottom; animation: bar-rise 0.5s cubic-bezier(.2,.7,.3,1) both; }
