@@ -124,3 +124,33 @@ export const IconTruck = (p: P) => (
 export const IconTextSize = (p: P) => (
   <svg {...base} {...p}><path d="M3.4 18 8 6.4 12.6 18" /><path d="M5.2 14.2h5.6" /><path d="M14.4 18 17.6 9.8 20.8 18" /><path d="M15.6 15.3h4" /></svg>
 );
+export const IconCheck = (p: P) => (
+  <svg {...base} {...p}><path d="m4.6 12.6 4.6 4.6L19.4 7" strokeWidth="2.2" /></svg>
+);
+export const IconDownload = (p: P) => (
+  <svg {...base} {...p}><path d="M12 3.6v11.6" /><path d="m7.4 10.8 4.6 4.6 4.6-4.6" /><path d="M4 17.4v1.4A1.6 1.6 0 0 0 5.6 20.4h12.8a1.6 1.6 0 0 0 1.6-1.6v-1.4" /></svg>
+);
+export const IconUpload = (p: P) => (
+  <svg {...base} {...p}><path d="M12 15.6V4" /><path d="m7.4 8.6 4.6-4.6 4.6 4.6" /><path d="M4 17.4v1.4A1.6 1.6 0 0 0 5.6 20.4h12.8a1.6 1.6 0 0 0 1.6-1.6v-1.4" /></svg>
+);
+export const IconCalendar = (p: P) => (
+  <svg {...base} {...p}><rect x="3.6" y="5" width="16.8" height="15.4" rx="2.4" /><path d="M3.6 9.8h16.8M8.2 3v4M15.8 3v4" /></svg>
+);
+export const IconLock = (p: P) => (
+  <svg {...base} {...p}><rect x="4.6" y="10.4" width="14.8" height="10" rx="2.2" /><path d="M8 10.4V7.6a4 4 0 0 1 8 0v2.8" /></svg>
+);
+export const IconPrint = (p: P) => (
+  <svg {...base} {...p}><path d="M6.6 9V3.6h10.8V9" /><rect x="3.4" y="9" width="17.2" height="7.6" rx="2" /><path d="M6.6 14h10.8v6.4H6.6Z" /></svg>
+);
+export const IconCopy = (p: P) => (
+  <svg {...base} {...p}><rect x="8.4" y="8.4" width="12" height="12" rx="2.2" /><path d="M15.6 8.4V5.6a2 2 0 0 0-2-2H5.6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.8" /></svg>
+);
+export const IconTrash = (p: P) => (
+  <svg {...base} {...p}><path d="M4 6.6h16M9.4 6.6V4.4h5.2v2.2" /><path d="m6.2 6.6.9 13a1.6 1.6 0 0 0 1.6 1.4h6.6a1.6 1.6 0 0 0 1.6-1.4l.9-13" /></svg>
+);
+export const IconEdit = (p: P) => (
+  <svg {...base} {...p}><path d="M14.8 4.6 19.4 9.2 9 19.6H4.4V15Z" /><path d="m12.6 6.8 4.6 4.6" /></svg>
+);
+export const IconClock = (p: P) => (
+  <svg {...base} {...p}><circle cx="12" cy="12" r="8.6" /><path d="M12 7.4V12l3 2" /></svg>
+);

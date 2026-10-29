@@ -1,7 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { pick, useLang, useT, type Bi } from "@/lib/i18n";
+import { useAuth, type User } from "@/lib/auth";
+import { useStore } from "@/lib/store";
+import { dateLabel } from "@/lib/data";
+import { maxVisitDate, minVisitDate, visitDateError } from "./form";
 import { IconAlert, IconArrowRight, IconShield } from "./Icons";
 
 type Kind = "in" | "out";
@@ -18,14 +23,21 @@ const SLOTS: { key: string; label: Bi }[] = [
   { key: "pm2", label: { ko: "오후 15–18시", en: "Afternoon 15–18" } },
 ];
 
+/** Remount once the session is known so a member's details pre-fill. */
 export default function MoveForm({ kind }: { kind: Kind }) {
+  const { user, ready } = useAuth();
+  return <MoveFormInner key={ready ? (user?.memberId ?? "guest") : "loading"} kind={kind} user={user} />;
+}
+
+function MoveFormInner({ kind, user }: { kind: Kind; user: User | null }) {
   const { lang } = useLang();
   const t = useT();
+  const { addRequest } = useStore();
   const [step, setStep] = useState(0);
-  const [done, setDone] = useState(false);
-  const [name, setName] = useState("");
-  const [tel, setTel] = useState("");
-  const [addr, setAddr] = useState("");
+  const [done, setDone] = useState<string | null>(null);
+  const [name, setName] = useState(user ? pick(user.name, lang) : "");
+  const [tel, setTel] = useState(user?.tel ?? "");
+  const [addr, setAddr] = useState(kind === "out" && user ? pick(user.address, lang) : "");
   const [date, setDate] = useState("");
   const [slot, setSlot] = useState("");
   const [agree, setAgree] = useState(false);
@@ -43,7 +55,8 @@ export default function MoveForm({ kind }: { kind: Kind }) {
       if (!addr.trim()) e.addr = t("주소를 입력해 주세요.", "Please enter the address.");
     }
     if (s === 1) {
-      if (!date) e.date = t("방문 희망일을 선택해 주세요.", "Please choose a preferred visit date.");
+      const de = visitDateError(date);
+      if (de) e.date = pick(de, lang);
       if (!slot) e.slot = t("방문 희망 시간대를 선택해 주세요.", "Please choose a preferred time slot.");
     }
     if (s === 2 && !agree) e.agree = t("개인정보 수집·이용에 동의해 주세요.", "Please agree to the collection and use of personal data.");
@@ -54,7 +67,20 @@ export default function MoveForm({ kind }: { kind: Kind }) {
   function next() {
     if (!validate(step)) return;
     if (step < 2) setStep(step + 1);
-    else setDone(true);
+    else {
+      const rec = addRequest({
+        type: kind === "in" ? "move-in" : "move-out",
+        name: name.trim(),
+        tel: tel.trim(),
+        addr: addr.trim(),
+        customerNo: user?.customerDigits,
+        date,
+        slot,
+        fields: {},
+      });
+      setDone(rec.id);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }
 
   if (done) {
@@ -62,7 +88,7 @@ export default function MoveForm({ kind }: { kind: Kind }) {
       [t("신청 구분", "Request type"), label],
       [t("신청인", "Applicant"), name],
       [t("주소", "Address"), addr],
-      [t("방문 희망", "Preferred visit"), `${date} ${slotLabel}`],
+      [t("방문 희망", "Preferred visit"), `${dateLabel(date, lang)} ${slotLabel}`],
     ];
     return (
       <div className="fade-up rounded-[1.25rem] border border-ink-200 bg-white p-8 text-center lg:p-12">
@@ -74,7 +100,7 @@ export default function MoveForm({ kind }: { kind: Kind }) {
         </h2>
         <p className="mx-auto mt-3 max-w-md text-[0.9375rem] leading-relaxed text-ink-600">
           {t("접수번호", "Reference no.")}{" "}
-          <strong className="font-extrabold tabular-nums text-ink-900">P-26091701</strong>
+          <strong data-receipt-id className="font-extrabold tabular-nums text-ink-900">{done}</strong>
           <br />
           {t(
             `담당 서비스센터에서 ${tel}로 방문 일정을 확정 안내드립니다.`,
@@ -91,12 +117,14 @@ export default function MoveForm({ kind }: { kind: Kind }) {
           ))}
         </dl>
 
-        <p className="mt-5 text-[0.8125rem] text-ink-500">
-          {t(
-            "접수 내역은 '방문예약 확인·변경'에서 다시 보실 수 있습니다.",
-            "You can view this request again under 'Visit booking'.",
-          )}
-        </p>
+        <div className="mt-6 flex flex-col justify-center gap-2 sm:flex-row">
+          <Link href={`/move/reservation?id=${done}`} className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-xl sk-gradient px-6 text-[0.9375rem] font-bold text-white">
+            {t("방문예약 확인·변경", "Manage visit")} <IconArrowRight className="size-4" />
+          </Link>
+          <Link href="/" className="inline-flex min-h-12 items-center justify-center rounded-xl border-2 border-ink-200 px-6 text-[0.9375rem] font-bold text-ink-700">
+            {t("처음으로", "Home")}
+          </Link>
+        </div>
       </div>
     );
   }
@@ -210,6 +238,8 @@ export default function MoveForm({ kind }: { kind: Kind }) {
                 id="mf-date"
                 type="date"
                 value={date}
+                min={minVisitDate()}
+                max={maxVisitDate()}
                 onChange={(e) => setDate(e.target.value)}
                 className={inputCls(!!errors.date)}
               />
@@ -254,7 +284,7 @@ export default function MoveForm({ kind }: { kind: Kind }) {
                 [t("신청인", "Applicant"), name],
                 [t("연락처", "Phone"), tel],
                 [t("주소", "Address"), addr],
-                [t("방문 희망", "Preferred visit"), `${date} ${slotLabel}`],
+                [t("방문 희망", "Preferred visit"), `${date ? dateLabel(date, lang) : ""} ${slotLabel}`],
               ].map(([k, v]) => (
                 <div key={k} className="flex gap-4 px-4 py-3.5">
                   <dt className="w-28 shrink-0 text-[0.875rem] text-ink-500">{k}</dt>

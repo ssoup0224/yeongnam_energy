@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import ComingSoon from "@/components/ComingSoon";
+import PageShell, { CRUMB } from "@/components/PageShell";
+import { Inspection } from "@/components/pages/safety";
 
 export const metadata: Metadata = { title: "가스시설 점검 안내" };
 
 export default function Page() {
   return (
-    <ComingSoon
+    <PageShell
       title={{ ko: "가스시설 점검 안내", en: "Facility Inspection" }}
-      lead={{ ko: "법정 정기 안전점검의 절차와 준비 사항을 안내합니다.", en: "The steps and what to prepare for the statutory regular safety inspection." }}
-      crumbs={[{ label: { ko: "안전·점검", en: "Safety" }, href: "/safety" }, { label: { ko: "가스시설 점검 안내", en: "Facility Inspection" } }]}
-      related={[{ label: { ko: "가스 안전사용 요령", en: "Safe Use Tips" }, href: "/safety" }, { label: { ko: "안전점검 SMS 사전안내", en: "Inspection SMS Notice" }, href: "/safety/sms" }]}
-    />
+      lead={{ ko: "법정 정기 안전점검 절차와 우리 동네 점검 일정을 확인하세요.", en: "How the statutory inspection works and when your area is due." }}
+      crumbs={[CRUMB.safety, { label: { ko: "가스시설 점검 안내", en: "Facility Inspection" } }]}
+    >
+      <Inspection />
+    </PageShell>
   );
 }

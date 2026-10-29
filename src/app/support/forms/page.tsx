@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import ComingSoon from "@/components/ComingSoon";
+import PageShell, { CRUMB } from "@/components/PageShell";
+import { Certificates } from "@/components/pages/support";
 
 export const metadata: Metadata = { title: "서식·증명 발급" };
 
 export default function Page() {
   return (
-    <ComingSoon
+    <PageShell
       title={{ ko: "서식·증명 발급", en: "Forms & Certificates" }}
-      lead={{ ko: "사용증명서, 납부확인서 등을 즉시 발급받으실 수 있습니다.", en: "Issue a proof-of-use or payment certificate instantly." }}
-      crumbs={[{ label: { ko: "고객지원", en: "Support" }, href: "/support" }, { label: { ko: "서식·증명 발급", en: "Forms & Certificates" } }]}
-      related={[{ label: { ko: "요금 조회·납부", en: "View & Pay Bill" }, href: "/bill" }]}
-    />
+      lead={{ ko: "사용증명서·납부확인서·완납증명서를 바로 발급하고 인쇄하세요.", en: "Issue and print usage, payment and no-arrears certificates instantly." }}
+      crumbs={[CRUMB.support, { label: { ko: "서식·증명 발급", en: "Forms & Certificates" } }]}
+    >
+      <Certificates />
+    </PageShell>
   );
 }

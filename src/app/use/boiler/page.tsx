@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import ComingSoon from "@/components/ComingSoon";
+import PageShell, { CRUMB } from "@/components/PageShell";
+import { Boiler } from "@/components/pages/use";
 
 export const metadata: Metadata = { title: "보일러 서류접수" };
 
 export default function Page() {
   return (
-    <ComingSoon
+    <PageShell
       title={{ ko: "보일러 서류접수", en: "Boiler Document Intake" }}
-      lead={{ ko: "보일러 설치·교체 관련 서류를 온라인으로 접수합니다.", en: "Submit boiler installation or replacement documents online." }}
-      crumbs={[{ label: { ko: "도시가스 이용", en: "Using Gas" }, href: "/use" }, { label: { ko: "보일러 서류접수", en: "Boiler Document Intake" } }]}
-      related={[{ label: { ko: "가스시설 점검 안내", en: "Facility Inspection" }, href: "/safety/inspection" }]}
-    />
+      lead={{ ko: "보일러 설치·교체·철거 서류를 온라인으로 제출하세요.", en: "Submit boiler installation, replacement or removal documents online." }}
+      crumbs={[CRUMB.use, { label: { ko: "보일러 서류접수", en: "Boiler Documents" } }]}
+    >
+      <Boiler />
+    </PageShell>
   );
 }

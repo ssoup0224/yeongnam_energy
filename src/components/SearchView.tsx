@@ -28,7 +28,7 @@ function runSearch(q: string, lang: Lang, t: (ko: string, en: string) => string)
     const title = pick(x.title, lang);
     const summary = pick(x.summary, lang);
     if (match(title) || match(summary) || match(pick(x.tag, lang))) {
-      hits.push({ label: title, href: "/support", kind: t("공지사항", "Notice"), snippet: summary });
+      hits.push({ label: title, href: `/support#notice-${x.id}`, kind: t("공지사항", "Notice"), snippet: summary });
     }
   }
   for (const f of FAQS) {

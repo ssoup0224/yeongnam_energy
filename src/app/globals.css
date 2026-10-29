@@ -179,3 +179,15 @@ body {
   to   { transform: scaleY(1); }
 }
 .bar-rise { transform-origin: bottom; animation: bar-rise 0.5s cubic-bezier(.2,.7,.3,1) both; }
+
+/* ── Print a single region (see lib/print.ts) ─────────────────── */
+@media print {
+  body.printing-scope * { visibility: hidden !important; }
+  body.printing-scope .print-area,
+  body.printing-scope .print-area * { visibility: visible !important; }
+  body.printing-scope .print-area {
+    position: absolute; inset: 0 auto auto 0; width: 100%;
+    border: 0 !important; box-shadow: none !important;
+  }
+  body.printing-scope .print-hide { display: none !important; }
+}

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { NOTICES, SITE } from "@/lib/site";
 import { pick, useLang, useT, type Bi } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
+import { useAccountView } from "@/lib/useAccountView";
+import { won } from "@/lib/data";
 import type { User } from "@/lib/auth";
 import {
   IconArrowRight,
@@ -77,7 +79,7 @@ export default function BentoHome() {
           <ul className="mt-3 divide-y divide-ink-100">
             {NOTICES.slice(0, 4).map((n) => (
               <li key={n.id}>
-                <Link href="/support" className="flex items-center gap-3 py-3 transition hover:opacity-70">
+                <Link href={`/support#notice-${n.id}`} className="flex items-center gap-3 py-3 transition hover:opacity-70">
                   <span
                     className={`shrink-0 rounded-md px-2 py-1 text-[0.6875rem] font-extrabold ${
                       n.important ? "bg-sk-red-50 text-sk-red-700" : "bg-ink-100 text-ink-600"
@@ -125,8 +127,10 @@ export default function BentoHome() {
 function AccountTile({ user }: { user: User }) {
   const { lang } = useLang();
   const t = useT();
+  const view = useAccountView(user.customerDigits, true);
   const name = pick(user.name, lang);
-  const bill = user.estimatedBill.toLocaleString("en-US");
+  const total = view?.bill.total ?? user.estimatedBill;
+  const paid = view?.paid ?? false;
   const due = new Date(user.dueDate);
   const dueLabel =
     lang === "en"
@@ -146,24 +150,29 @@ function AccountTile({ user }: { user: User }) {
           </span>
         </p>
         <div className="mt-6 border-t border-white/15 pt-6">
-          <p className="text-[0.8125rem] text-white/60">{t("이번 달 예상 요금", "This month's estimate")}</p>
-          <p className="mt-1 text-[2.75rem] font-extrabold tabular-nums leading-none tracking-tight sm:text-[3.5rem]">
-            {lang === "en" ? `₩${bill}` : `${bill}원`}
+          <p className="flex items-center gap-2 text-[0.8125rem] text-white/60">
+            {paid ? t("이번 달 납부 완료", "Paid this month") : t("이번 달 예상 요금", "This month's estimate")}
+            {view?.reading ? <span className="rounded-full bg-white/15 px-2 py-0.5 text-[0.6875rem] font-bold text-white/80">{t("자가검침 반영", "self-reading")}</span> : null}
           </p>
-          <p className="mt-2 text-[0.8125rem] text-white/60">{t(`납부 예정일 ${dueLabel}`, `Due ${dueLabel}`)}</p>
+          <p data-home-bill className="mt-1 text-[2.75rem] font-extrabold tabular-nums leading-none tracking-tight sm:text-[3.5rem]">
+            {won(total, lang)}
+          </p>
+          <p className="mt-2 text-[0.8125rem] text-white/60">
+            {paid ? t("납부해 주셔서 감사합니다.", "Thank you for paying.") : t(`납부 예정일 ${dueLabel}`, `Due ${dueLabel}`)}
+          </p>
         </div>
         <div className="mt-6 flex flex-wrap gap-2">
           <Link
             href="/bill"
             className="inline-flex min-h-12 items-center gap-1.5 rounded-xl bg-white px-6 text-[0.9375rem] font-extrabold text-ink-900 transition hover:bg-ink-100"
           >
-            {t("요금 상세·납부", "View & pay")} <IconArrowRight className="size-4" />
+            {paid ? t("청구서 보기", "View bill") : t("요금 상세·납부", "View & pay")} <IconArrowRight className="size-4" />
           </Link>
           <Link
-            href="/bill/account"
+            href="/mypage"
             className="inline-flex min-h-12 items-center gap-1.5 rounded-xl border border-white/30 px-5 text-[0.9375rem] font-bold text-white transition hover:bg-white/10"
           >
-            {t("계정 관리", "Manage account")}
+            {t("마이페이지", "My page")}
           </Link>
         </div>
       </div>
@@ -227,8 +236,10 @@ function UsageTile({ user }: { user?: User }) {
   const { lang } = useLang();
   const t = useT();
 
-  const values = user ? user.usage.map((u) => u.value) : PLACEHOLDER_USAGE;
-  const months = user ? user.usage.map((u) => u.month) : PLACEHOLDER_MONTHS;
+  const view = useAccountView(user?.customerDigits, true);
+  const usage = view?.usage ?? user?.usage;
+  const values = usage ? usage.map((u) => u.value) : PLACEHOLDER_USAGE;
+  const months = usage ? usage.map((u) => u.month) : PLACEHOLDER_MONTHS;
   const max = Math.max(...values);
   const locked = !user;
 

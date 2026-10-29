@@ -90,9 +90,9 @@ export default function SiteHeader() {
             </Link>
             {user ? (
               <>
-                <span className="flex min-h-9 items-center px-3 font-semibold text-ink-800">
+                <Link href="/mypage" className="flex min-h-9 items-center px-3 font-semibold text-ink-800 hover:text-sk-red-600">
                   {t(`${userName}님`, userName)}
-                </span>
+                </Link>
                 <button
                   type="button"
                   onClick={logout}
@@ -175,7 +175,7 @@ export default function SiteHeader() {
             </Link>
             {user ? (
               <Link
-                href="/"
+                href="/mypage"
                 className="hidden h-11 items-center gap-2 rounded-full bg-ink-900 px-5 text-sm font-bold text-white hover:bg-ink-800 lg:flex"
               >
                 <IconUser className="size-4" />
@@ -267,7 +267,7 @@ export default function SiteHeader() {
               {user ? (
                 <div className="flex flex-1 items-center gap-2">
                   <Link
-                    href="/"
+                    href="/mypage"
                     className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-ink-900 text-sm font-bold text-white"
                   >
                     <IconUser className="size-4" /> {t(`${userName}님`, userName)}

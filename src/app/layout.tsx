@@ -5,6 +5,7 @@ import SiteFooter from "@/components/SiteFooter";
 import MobileTabBar from "@/components/MobileTabBar";
 import { LangProvider, langBootScript, T } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth";
+import { StoreProvider } from "@/lib/store";
 
 export const metadata: Metadata = {
   title: {
@@ -39,6 +40,7 @@ export default function RootLayout({
       <body className="antialiased">
         <LangProvider>
           <AuthProvider>
+            <StoreProvider>
             <a href="#main" className="skip-link">
               <T ko="본문 바로가기" en="Skip to content" />
             </a>
@@ -48,6 +50,7 @@ export default function RootLayout({
             </main>
             <SiteFooter />
             <MobileTabBar />
+            </StoreProvider>
           </AuthProvider>
         </LangProvider>
       </body>
