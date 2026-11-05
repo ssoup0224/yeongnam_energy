@@ -63,16 +63,16 @@ export default function SiteHeader() {
     <>
       {/* ── Utility bar ─────────────────────────────────────────── */}
       <div className="hidden border-b border-ink-200 bg-white lg:block no-print">
-        <div className="shell flex h-11 items-center justify-between text-[0.8125rem]">
-          <p className="flex items-center gap-2 text-ink-500">
+        <div className="shell flex h-11 items-center justify-between gap-4 whitespace-nowrap text-[0.8125rem]">
+          <p className="flex min-w-0 items-center gap-2 text-ink-500">
             <span className="rounded-full bg-sk-red-50 px-2 py-0.5 font-semibold text-sk-red-600">
               {pick(SITE.region, lang)}
             </span>
-            <span>
-              {t(`${pick(SITE.group, lang)} 도시가스 공급사`, `A ${pick(SITE.group, lang)} city-gas supplier`)}
+            <span className="hidden truncate xl:inline">
+              {t(`${pick(SITE.group, lang)} 도시가스 공급사`, pick(SITE.group, lang))}
             </span>
           </p>
-          <div className="flex items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1">
             <a
               href={`tel:${SITE.safetyLine}`}
               className="flex min-h-9 items-center gap-1.5 rounded-full px-3 font-bold text-sk-red-600 hover:bg-sk-red-50"
@@ -85,8 +85,8 @@ export default function SiteHeader() {
             <span className="mx-1 h-4 w-px bg-ink-200" aria-hidden />
             <TextSizeControl compact />
             <span className="mx-1 h-4 w-px bg-ink-200" aria-hidden />
-            <Link href="/support/qna" className="flex min-h-9 items-center px-3 text-ink-600 hover:text-ink-900">
-              {t("온라인 상담", "Online Q&A")}
+            <Link href="/support/faq" className="flex min-h-9 items-center px-3 text-ink-600 hover:text-ink-900">
+              {t("자주 묻는 질문", "FAQ")}
             </Link>
             {user ? (
               <>
@@ -118,20 +118,22 @@ export default function SiteHeader() {
         <div className="shell flex h-16 items-center gap-3 lg:h-[4.5rem]">
           <Link
             href="/"
-            className="flex shrink-0 items-center gap-2.5"
+            className="flex min-w-0 items-center gap-2 sm:gap-2.5 lg:shrink-0"
             aria-label={t(
               `${pick(SITE.company, lang)} ${pick(SITE.region, lang)} 홈으로`,
               `${pick(SITE.company, lang)} ${pick(SITE.region, lang)} — home`,
             )}
           >
-            {/* Official SK innovation E&S CI, swapped by language */}
-            <BrandLogo className="h-6 lg:h-[1.875rem]" />
-            <span className="h-6 w-px bg-ink-200 lg:h-8" aria-hidden />
-            <span className="flex flex-col leading-none">
-              <span className="text-[0.9375rem] font-extrabold tracking-tight text-ink-900 lg:text-[1.125rem]">
+            {/* Official SK Innovation E&S CI, swapped by language.
+                The lockup may shrink on small phones so the search and
+                menu buttons are never pushed off-screen. */}
+            <BrandLogo className="h-5 shrink-0 sm:h-6 lg:h-[1.625rem] 2xl:h-[1.875rem]" />
+            <span className="h-5 w-px shrink-0 bg-ink-200 sm:h-6 lg:h-8" aria-hidden />
+            <span className="flex min-w-0 flex-col leading-none">
+              <span className="truncate text-[0.875rem] font-extrabold tracking-tight text-ink-900 sm:text-[0.9375rem] lg:text-[1rem] 2xl:text-[1.125rem]">
                 {pick(SITE.company, lang)}
               </span>
-              <span className="mt-0.5 text-[0.6875rem] font-semibold text-sk-red-600">
+              <span className="mt-0.5 truncate text-[0.6875rem] font-semibold text-sk-red-600">
                 {t(`${pick(SITE.region, lang)} 도시가스`, `${pick(SITE.region, lang)} City Gas`)}
               </span>
             </span>
@@ -141,9 +143,9 @@ export default function SiteHeader() {
           <nav
             ref={navRef}
             aria-label={t("주요 메뉴", "Main menu")}
-            className="ml-6 hidden flex-1 lg:block"
+            className="ml-2 hidden min-w-0 flex-1 lg:block 2xl:ml-6"
           >
-            <ul className="flex items-center gap-1">
+            <ul className="flex items-center 2xl:gap-1">
               {NAV.map((item, i) => (
                 <li key={item.href}>
                   <Link
@@ -152,7 +154,7 @@ export default function SiteHeader() {
                     aria-current={isActive(item.href) ? "page" : undefined}
                     onMouseEnter={() => setOpenIdx(i)}
                     onFocus={() => setOpenIdx(i)}
-                    className={`relative flex h-[4.5rem] items-center px-4 text-[0.9375rem] font-bold transition
+                    className={`relative flex h-[4.5rem] items-center whitespace-nowrap px-2.5 text-[0.875rem] font-bold transition 2xl:px-4 2xl:text-[0.9375rem]
                       ${isActive(item.href) ? "text-sk-red-600" : "text-ink-700 hover:text-sk-red-600"}`}
                   >
                     {pick(item.label, lang)}
@@ -165,7 +167,7 @@ export default function SiteHeader() {
             </ul>
           </nav>
 
-          <div className="ml-auto flex items-center gap-1.5">
+          <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
             <Link
               href="/search"
               aria-label={t("사이트 검색", "Search the site")}
@@ -176,17 +178,18 @@ export default function SiteHeader() {
             {user ? (
               <Link
                 href="/mypage"
-                className="hidden h-11 items-center gap-2 rounded-full bg-ink-900 px-5 text-sm font-bold text-white hover:bg-ink-800 lg:flex"
+                aria-label={t(`${userName}님 마이페이지`, `${userName} — My page`)}
+                title={t("마이페이지", "My page")}
+                className="hidden size-11 items-center justify-center rounded-full bg-ink-900 text-white hover:bg-ink-800 lg:flex"
               >
-                <IconUser className="size-4" />
-                {t(`${userName}님`, userName)}
+                <IconUser className="size-[1.125rem] shrink-0" />
               </Link>
             ) : (
               <Link
                 href="/login"
-                className="hidden h-11 items-center gap-2 rounded-full bg-ink-900 px-5 text-sm font-bold text-white hover:bg-ink-800 lg:flex"
+                className="hidden h-11 items-center gap-2 whitespace-nowrap rounded-full bg-ink-900 px-4 text-sm font-bold text-white hover:bg-ink-800 lg:flex 2xl:px-5"
               >
-                <IconUser className="size-4" />
+                <IconUser className="size-4 shrink-0" />
                 {t("로그인", "Log in")}
               </Link>
             )}
@@ -208,7 +211,7 @@ export default function SiteHeader() {
             className="absolute inset-x-0 top-full hidden border-t border-ink-200 bg-white shadow-[0_18px_40px_-20px_rgba(17,21,29,.35)] lg:block"
             onMouseLeave={() => setOpenIdx(null)}
           >
-            <div className="shell grid grid-cols-[minmax(0,14rem)_1fr] gap-10 py-8">
+            <div className="shell grid grid-cols-[minmax(0,12rem)_1fr] gap-6 py-8 2xl:grid-cols-[minmax(0,14rem)_1fr] 2xl:gap-10">
               <div>
                 <p className="text-xl font-extrabold text-ink-900">{pick(NAV[openIdx].label, lang)}</p>
                 <p className="mt-2 text-sm leading-relaxed text-ink-500">
@@ -221,16 +224,16 @@ export default function SiteHeader() {
                   {t("전체 보기", "View all")} <IconChevron className="size-3.5" />
                 </Link>
               </div>
-              <ul className="grid grid-cols-3 gap-x-4 gap-y-1">
+              <ul className="grid grid-cols-2 gap-x-4 gap-y-1 2xl:grid-cols-3">
                 {NAV[openIdx].children.map((c) => (
                   <li key={c.href}>
                     <Link
                       href={c.href}
                       className="block rounded-xl px-4 py-3 transition hover:bg-ink-50"
                     >
-                      <span className="block text-[0.9375rem] font-bold text-ink-800">{pick(c.label, lang)}</span>
+                      <span className="block text-balance text-[0.9375rem] font-bold text-ink-800">{pick(c.label, lang)}</span>
                       {c.desc ? (
-                        <span className="mt-0.5 block text-[0.8125rem] text-ink-500">{pick(c.desc, lang)}</span>
+                        <span className="mt-0.5 line-clamp-2 block text-balance text-[0.8125rem] leading-snug text-ink-500">{pick(c.desc, lang)}</span>
                       ) : null}
                     </Link>
                   </li>

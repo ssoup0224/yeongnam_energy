@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { BANKS, CARDS, EASY_PAY, periodLabel, won } from "@/lib/data";
+import { BANKS, CARDS, EASY_PAY, institutionLabel, periodLabel, won } from "@/lib/data";
 import { pick, useLang, useT } from "@/lib/i18n";
 import { useStore, type Payment } from "@/lib/store";
 import { InfoBox, PrimaryButton, RadioCards } from "./form";
@@ -70,7 +70,7 @@ export default function PayDialog({
   const methodLabel = () => {
     if (method === "card") return `${card} ${installment === "0" ? t("일시불", "full payment") : t(`${installment}개월`, `${installment} months`)}`;
     if (method === "easy") return pick(EASY_PAY.find((e) => e.id === easy)!.label, lang);
-    if (method === "autopay" && autoPay) return `${autoPay.institution} ****${autoPay.last4}`;
+    if (method === "autopay" && autoPay) return `${institutionLabel(autoPay.institution, lang)} ****${autoPay.last4}`;
     return "";
   };
 
@@ -151,7 +151,7 @@ export default function PayDialog({
                   options={[
                     { value: "card", label: { ko: "신용·체크카드", en: "Credit / debit card" } },
                     { value: "easy", label: { ko: "간편결제", en: "Easy pay" } },
-                    ...(autoPay ? [{ value: "autopay" as Method, label: { ko: "자동이체 계좌", en: "Auto-pay account" }, sub: { ko: `${autoPay.institution} ****${autoPay.last4}`, en: `${autoPay.institution} ****${autoPay.last4}` } }] : []),
+                    ...(autoPay ? [{ value: "autopay" as Method, label: { ko: "자동이체 계좌", en: "Auto-pay account" }, sub: { ko: `${autoPay.institution} ****${autoPay.last4}`, en: `${institutionLabel(autoPay.institution, "en")} ****${autoPay.last4}` } }] : []),
                     { value: "vaccount", label: { ko: "가상계좌 이체", en: "Bank transfer" } },
                   ]}
                 />

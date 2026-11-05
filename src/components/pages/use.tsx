@@ -17,6 +17,7 @@ import {
   type ServiceRequest,
 } from "@/lib/store";
 import CustomerLookup from "../CustomerLookup";
+import DateInput from "../DateInput";
 import RequestForm, { STANDARD_CONSENT } from "../RequestForm";
 import {
   Card,
@@ -33,7 +34,7 @@ import {
   SectionTitle,
   visitDateError,
 } from "../form";
-import { IconArrowRight, IconCalendar, IconCheck, IconClock, IconDoc, IconPrint } from "../Icons";
+import { IconArrowRight, IconCalendar, IconCheck, IconClock, IconDoc, IconEdit, IconFlame, IconHome, IconMoveIn, IconMoveOut, IconPrint, IconStove, IconUser } from "../Icons";
 
 /* ═══ 가스레인지 교체·철거 ═══════════════════════════════════════ */
 
@@ -259,7 +260,7 @@ function RequestDetail({ r }: { r: ServiceRequest }) {
       {active && editing ? (
         <div className="mt-4 space-y-4 rounded-2xl border border-ink-200 p-4">
           <Field id="new-date" label={t("새 방문일", "New date")} error={undefined}>
-            <input id="new-date" type="date" value={date} min={minVisitDate()} max={maxVisitDate()} onChange={(e) => setDate(e.target.value)} className={inputCls(!!err)} />
+            <DateInput id="new-date" value={date} min={minVisitDate()} max={maxVisitDate()} onChange={setDate} invalid={!!err} />
           </Field>
           <RadioCards name="new-slot" value={slot} onChange={setSlot} options={SLOTS.map((s) => ({ value: s.key, label: s.label }))} />
           {err ? <ErrorText>{err}</ErrorText> : null}
@@ -306,6 +307,19 @@ function RequestDetail({ r }: { r: ServiceRequest }) {
 
 /* ═══ 도시가스 이용 (hub) ═══════════════════════════════════════ */
 
+const HUB_ICONS: Record<string, typeof IconDoc> = {
+  "/guide": IconDoc,
+  "/move/in": IconMoveIn,
+  "/move/out": IconMoveOut,
+  "/move/stove": IconStove,
+  "/move/reservation": IconCalendar,
+  "/use/contract": IconEdit,
+  "/use/owner": IconUser,
+  "/use/supply": IconClock,
+  "/use/boiler": IconFlame,
+  "/use/process": IconHome,
+};
+
 export function UseHub() {
   const t = useT();
   const { lang } = useLang();
@@ -331,9 +345,14 @@ export function UseHub() {
         </Link>
       ) : null}
       <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {group.children.map((c) => (
+        {group.children.map((c) => {
+          const Icon = HUB_ICONS[c.href] ?? IconDoc;
+          return (
           <li key={c.href}>
             <Link href={c.href} className="group flex h-full items-center gap-4 rounded-[1.25rem] border border-ink-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-sk-red-300">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-sk-red-50 text-sk-red-600 transition group-hover:bg-sk-red-500 group-hover:text-white">
+                <Icon className="size-6" />
+              </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[1rem] font-extrabold text-ink-900">{pick(c.label, lang)}</span>
                 {c.desc ? <span className="mt-0.5 block text-[0.8125rem] text-ink-500">{pick(c.desc, lang)}</span> : null}
@@ -341,7 +360,8 @@ export function UseHub() {
               <IconArrowRight className="size-4 shrink-0 text-ink-300 transition group-hover:translate-x-1 group-hover:text-sk-red-500" />
             </Link>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   );

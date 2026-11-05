@@ -8,6 +8,7 @@ import { useStore } from "@/lib/store";
 import { dateLabel } from "@/lib/data";
 import { maxVisitDate, minVisitDate, visitDateError } from "./form";
 import { IconAlert, IconArrowRight, IconShield } from "./Icons";
+import DateInput from "./DateInput";
 
 type Kind = "in" | "out";
 
@@ -134,7 +135,7 @@ function MoveFormInner({ kind, user }: { kind: Kind; user: User | null }) {
       {/* Progress */}
       <ol className="flex items-center gap-2" aria-label={t("신청 단계", "Application steps")}>
         {STEPS.map((s, i) => (
-          <li key={s.ko} className="flex min-w-0 flex-1 items-center gap-2">
+          <li key={s.ko} className={`flex min-w-0 items-center gap-2 ${i === step ? "flex-1" : "flex-none sm:flex-1"}`}>
             <span
               aria-current={i === step ? "step" : undefined}
               className={`flex size-8 shrink-0 items-center justify-center rounded-full text-[0.8125rem] font-extrabold transition
@@ -146,15 +147,17 @@ function MoveFormInner({ kind, user }: { kind: Kind; user: User | null }) {
             >
               {i < step ? "✓" : i + 1}
             </span>
+            {/* Phones: only the current step shows its label, others just
+                their number — three labels don't fit without "…". */}
             <span
-              className={`truncate text-[0.8125rem] font-bold ${
-                i === step ? "text-ink-900" : "text-ink-400"
+              className={`whitespace-nowrap text-[0.8125rem] font-bold ${
+                i === step ? "text-ink-900" : "sr-only text-ink-400 sm:not-sr-only sm:truncate"
               }`}
             >
               {pick(s, lang)}
             </span>
             {i < STEPS.length - 1 ? (
-              <span className={`h-0.5 min-w-3 flex-1 rounded ${i < step ? "bg-ink-900" : "bg-ink-200"}`} aria-hidden />
+              <span className={`h-0.5 min-w-4 flex-1 rounded ${i < step ? "bg-ink-900" : "bg-ink-200"}`} aria-hidden />
             ) : null}
           </li>
         ))}
@@ -234,15 +237,7 @@ function MoveFormInner({ kind, user }: { kind: Kind; user: User | null }) {
                   : t("가스 사용 개시일 기준으로 선택하세요.", "Choose based on your gas start date.")
               }
             >
-              <input
-                id="mf-date"
-                type="date"
-                value={date}
-                min={minVisitDate()}
-                max={maxVisitDate()}
-                onChange={(e) => setDate(e.target.value)}
-                className={inputCls(!!errors.date)}
-              />
+              <DateInput id="mf-date" value={date} min={minVisitDate()} max={maxVisitDate()} onChange={setDate} invalid={!!errors.date} />
             </Field>
 
             <fieldset>

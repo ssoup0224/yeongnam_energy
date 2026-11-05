@@ -54,7 +54,7 @@ export default function CustomerLookup({
           {t("고객번호", "Customer number")} <span className="text-sk-red-600">{t("(필수)", "(required)")}</span>
         </label>
         <p id={`${inputId}-help`} className="mt-1 text-[0.8125rem] text-ink-500">
-          {t("숫자 10자리 · 하이픈(-) 없이 입력해도 됩니다. 체험용: 1234-567-890", "10 digits · hyphens optional. Demo: 1234-567-890")}
+          {t("숫자 10자리 · 하이픈(-) 없이 입력해도 됩니다.", "10 digits · hyphens optional.")}
         </p>
         <div className="mt-2 flex flex-col gap-2 sm:flex-row">
           <input

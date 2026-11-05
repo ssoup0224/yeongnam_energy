@@ -11,16 +11,16 @@ export const metadata: Metadata = {
 };
 
 const SHORTCUTS: { label: Bi; desc: Bi; href: string; Icon: typeof IconAutoPay }[] = [
-  { label: { ko: "자동이체 신청", en: "Auto-pay Setup" }, desc: { ko: "매달 자동 납부 · 요금 할인", en: "Pay monthly · get a discount" }, href: "/bill/auto", Icon: IconAutoPay },
-  { label: { ko: "청구서 유형 변경", en: "Change Bill Type" }, desc: { ko: "종이 → 모바일·이메일", en: "Paper → mobile / email" }, href: "/bill/type", Icon: IconDoc },
-  { label: { ko: "실시간 요금계산기", en: "Rate Calculator" }, desc: { ko: "사용량으로 미리 계산", en: "Estimate from usage" }, href: "/bill/calculator", Icon: IconCalculator },
+  { label: { ko: "자동이체 신청", en: "Set Up Auto-pay" }, desc: { ko: "매달 자동 납부 · 요금 할인", en: "Pay monthly · get a discount" }, href: "/bill/auto", Icon: IconAutoPay },
+  { label: { ko: "청구서 유형 변경", en: "Change Bill Delivery" }, desc: { ko: "종이 → 모바일·이메일", en: "Paper → mobile / email" }, href: "/bill/type", Icon: IconDoc },
+  { label: { ko: "실시간 요금계산기", en: "Usage Calculator" }, desc: { ko: "사용량으로 미리 계산", en: "Estimate from usage" }, href: "/bill/calculator", Icon: IconCalculator },
 ];
 
 export default function BillPage() {
   return (
     <>
       <PageHero
-        title={<T ko="요금 조회·납부" en="View & pay your bill" />}
+        title={<T ko="요금 조회·납부" en="View & Pay Your Bill" />}
         lead={
           <T
             ko="고객번호만 있으면 로그인 없이도 이번 달 청구요금을 확인하고 납부할 수 있습니다."

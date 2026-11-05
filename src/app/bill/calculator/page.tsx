@@ -12,7 +12,7 @@ export default function CalculatorPage() {
   return (
     <>
       <PageHero
-        title={<T ko="실시간 요금계산기" en="Rate Calculator" />}
+        title={<T ko="실시간 요금계산기" en="Usage Calculator" />}
         lead={
           <T
             ko="용도와 사용량만 넣으면 기본요금·사용요금·부가세까지 한 번에 계산해 드립니다."
@@ -21,7 +21,7 @@ export default function CalculatorPage() {
         }
         crumbs={[
           { label: <T ko="요금·납부" en="Billing" />, href: "/bill" },
-          { label: <T ko="실시간 요금계산기" en="Rate Calculator" /> },
+          { label: <T ko="실시간 요금계산기" en="Usage Calculator" /> },
         ]}
       />
       <div className="shell py-10 lg:py-14">

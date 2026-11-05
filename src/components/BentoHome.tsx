@@ -23,15 +23,13 @@ import {
 const MONTHS_EN = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 /* Sample shape for the signed-out usage tile, so it reads as the same chart. */
-const PLACEHOLDER_USAGE = [40, 55, 72, 48, 66, 90];
-const PLACEHOLDER_MONTHS = [5, 6, 7, 8, 9, 10];
 
 const TASKS: { label: Bi; href: string; Icon: typeof IconMoveIn }[] = [
   { label: { ko: "전입신청", en: "Move-in" }, href: "/move/in", Icon: IconMoveIn },
   { label: { ko: "전출신청", en: "Move-out" }, href: "/move/out", Icon: IconMoveOut },
   { label: { ko: "자동이체", en: "Auto-pay" }, href: "/bill/auto", Icon: IconAutoPay },
-  { label: { ko: "자가검침", en: "Meter" }, href: "/safety/meter", Icon: IconMeter },
-  { label: { ko: "요금계산기", en: "Calculator" }, href: "/bill/calculator", Icon: IconCalculator },
+  { label: { ko: "자가검침", en: "Meter Reading" }, href: "/safety/meter", Icon: IconMeter },
+  { label: { ko: "요금계산기", en: "Usage Calculator" }, href: "/bill/calculator", Icon: IconCalculator },
   { label: { ko: "서비스센터", en: "Centers" }, href: "/centers", Icon: IconCenter },
 ];
 
@@ -48,8 +46,9 @@ export default function BentoHome() {
         {/* 1 ── Anchor: account + bill (signed in) / sign-in (signed out) */}
         {signedIn && user ? <AccountTile user={user} /> : <SignInTile />}
 
-        {/* 2 ── Usage chart — real when signed in, locked preview when not */}
-        <UsageTile user={signedIn && user ? user : undefined} />
+        {/* 2 ── Usage chart (signed in only — signed out, the sign-in tile
+               spans the row instead of showing a locked preview) */}
+        {signedIn && user ? <UsageTile user={user} /> : null}
 
         {/* 3–8 ── Task tiles (identical in both states) */}
         {TASKS.map(({ label, href, Icon }) => (
@@ -81,7 +80,7 @@ export default function BentoHome() {
               <li key={n.id}>
                 <Link href={`/support#notice-${n.id}`} className="flex items-center gap-3 py-3 transition hover:opacity-70">
                   <span
-                    className={`shrink-0 rounded-md px-2 py-1 text-[0.6875rem] font-extrabold ${
+                    className={`inline-flex w-[4.75rem] shrink-0 justify-center rounded-md py-1 text-[0.6875rem] font-extrabold ${
                       n.important ? "bg-sk-red-50 text-sk-red-700" : "bg-ink-100 text-ink-600"
                     }`}
                   >
@@ -100,23 +99,24 @@ export default function BentoHome() {
         </section>
 
         {/* 10 ── Safety card (identical in both states) */}
-        <section className="col-span-2 flex flex-col rounded-[1.5rem] border-2 border-sk-red-200 bg-sk-red-50 p-6 lg:col-span-4">
+        {/* Hidden on phones: the footer's emergency strip follows right after,
+            and two phone buttons in a row read as a duplicate. */}
+        <section className="col-span-2 hidden flex-col rounded-[1.5rem] border-2 border-sk-red-200 bg-sk-red-50 p-6 lg:col-span-4 lg:flex">
           <h2 className="flex items-center gap-2 text-base font-extrabold text-ink-900">
             <span className="flex size-6 items-center justify-center rounded-full bg-sk-red-500 text-[0.75rem] text-white">!</span>
             {t("가스 냄새가 나나요?", "Smell gas?")}
           </h2>
-          <p className="mt-2 text-[0.8125rem] leading-relaxed text-ink-600">
-            {t(
-              "밸브를 잠그고 창문을 연 뒤, 밖으로 나와 신고하세요.",
-              "Close the valve, open windows, go outside, then call.",
-            )}
+          <p className="mt-2 text-[0.8125rem] text-ink-600">
+            {t("밸브 잠그고, 환기한 뒤, 밖에서 신고하세요.", "Close the valve, air out, call from outside.")}
           </p>
-          <a
-            href={`tel:${SITE.safetyLine}`}
-            className="mt-auto flex min-h-13 items-center justify-center gap-2 rounded-xl bg-sk-red-500 px-5 pt-3 text-base font-extrabold text-white transition hover:bg-sk-red-600"
-          >
-            <IconPhone className="size-5" /> {SITE.safetyLine}
-          </a>
+          <div className="mt-auto pt-4">
+            <a
+              href={`tel:${SITE.safetyLine}`}
+              className="flex min-h-13 items-center justify-center gap-2 rounded-xl bg-sk-red-500 px-5 text-base font-extrabold leading-none text-white transition hover:bg-sk-red-600"
+            >
+              <IconPhone className="size-5" /> {SITE.safetyLine}
+            </a>
+          </div>
         </section>
       </div>
     </div>
@@ -185,9 +185,10 @@ function SignInTile() {
   const { lang } = useLang();
   const t = useT();
   return (
-    <section className="relative col-span-2 flex flex-col overflow-hidden rounded-[1.5rem] bg-ink-900 p-7 text-white lg:col-span-7 lg:p-9">
+    <section className="relative col-span-2 flex flex-col overflow-hidden rounded-[1.5rem] bg-ink-900 p-7 text-white lg:col-span-12 lg:p-9">
       <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full sk-gradient opacity-30 blur-2xl" />
-      <div className="relative flex flex-1 flex-col">
+      <div className="relative flex flex-1 flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div>
         <p className="inline-flex w-fit items-center gap-1.5 rounded-full border border-white/20 px-3 py-1 text-[0.75rem] font-bold text-white/70">
           <IconUser className="size-3.5" /> {t("내 정보", "My account")}
         </p>
@@ -212,7 +213,8 @@ function SignInTile() {
             "See your estimated bill, 6-month usage and requests, all in one place.",
           )}
         </p>
-        <div className="mt-auto flex flex-wrap gap-2 pt-6">
+        </div>
+        <div className="flex flex-wrap gap-2 lg:shrink-0">
           <Link
             href="/login"
             className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-white px-6 text-[0.9375rem] font-extrabold text-ink-900 transition hover:bg-ink-100"
@@ -231,17 +233,16 @@ function SignInTile() {
   );
 }
 
-/* ── Usage chart: real data when signed in, locked preview otherwise ── */
-function UsageTile({ user }: { user?: User }) {
+/* ── Usage chart (signed in) ──────────────────────────────────────── */
+function UsageTile({ user }: { user: User }) {
   const { lang } = useLang();
   const t = useT();
 
-  const view = useAccountView(user?.customerDigits, true);
-  const usage = view?.usage ?? user?.usage;
-  const values = usage ? usage.map((u) => u.value) : PLACEHOLDER_USAGE;
-  const months = usage ? usage.map((u) => u.month) : PLACEHOLDER_MONTHS;
+  const view = useAccountView(user.customerDigits, true);
+  const usage = view?.usage ?? user.usage;
+  const values = usage.map((u) => u.value);
+  const months = usage.map((u) => u.month);
   const max = Math.max(...values);
-  const locked = !user;
 
   return (
     <section className="relative col-span-2 flex flex-col rounded-[1.5rem] border border-ink-200 bg-white p-6 lg:col-span-5 lg:p-7">
@@ -251,18 +252,16 @@ function UsageTile({ user }: { user?: User }) {
         <span className="text-[0.8125rem] font-semibold text-ink-400">(㎥)</span>
       </div>
 
-      <div className={`relative mt-auto pt-6 ${locked ? "opacity-50" : ""}`}>
+      <div className="relative mt-auto pt-6">
         <div className="flex items-end justify-between gap-2 sm:gap-3" style={{ height: "10rem" }}>
           {values.map((v, i) => {
             const barPx = Math.max(10, Math.round((v / max) * 128));
-            const latest = !locked && i === values.length - 1;
+            const latest = i === values.length - 1;
             return (
               <div key={months[i]} className="flex flex-1 flex-col items-center justify-end gap-1.5">
-                {locked ? null : (
-                  <span className={`text-[0.6875rem] font-bold ${latest ? "text-sk-red-600" : "text-ink-400"}`}>{v}</span>
-                )}
+                <span className={`text-[0.6875rem] font-bold ${latest ? "text-sk-red-600" : "text-ink-400"}`}>{v}</span>
                 <div
-                  className={`${locked ? "" : "bar-rise"} w-full max-w-[2.5rem] rounded-lg ${latest ? "sk-gradient" : "bg-ink-200"}`}
+                  className={`bar-rise w-full max-w-[2.5rem] rounded-lg ${latest ? "sk-gradient" : "bg-ink-200"}`}
                   style={{ height: `${barPx}px`, animationDelay: `${i * 60}ms` }}
                   aria-hidden
                 />
@@ -272,31 +271,12 @@ function UsageTile({ user }: { user?: User }) {
         </div>
         <div className="mt-2 flex justify-between gap-2 sm:gap-3">
           {months.map((m, i) => (
-            <span
-              key={m}
-              className={`flex-1 text-center text-[0.75rem] ${
-                !locked && i === months.length - 1 ? "font-bold text-ink-900" : "text-ink-500"
-              }`}
-            >
+            <span key={m} className={`flex-1 text-center text-[0.75rem] ${i === months.length - 1 ? "font-bold text-ink-900" : "text-ink-500"}`}>
               {lang === "en" ? MONTHS_EN[m] : `${m}월`}
             </span>
           ))}
         </div>
       </div>
-
-      {locked ? (
-        <div className="absolute inset-0 flex flex-col items-center justify-end rounded-[1.5rem] bg-gradient-to-t from-white via-white/85 to-transparent p-6 text-center">
-          <p className="text-[0.875rem] font-bold text-ink-700">
-            {t("로그인하면 실제 사용량이 표시됩니다", "Sign in to see your real usage")}
-          </p>
-          <Link
-            href="/login"
-            className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-ink-900 px-5 text-[0.875rem] font-bold text-white transition hover:bg-ink-800"
-          >
-            {t("로그인", "Log in")} <IconArrowRight className="size-4" />
-          </Link>
-        </div>
-      ) : null}
     </section>
   );
 }

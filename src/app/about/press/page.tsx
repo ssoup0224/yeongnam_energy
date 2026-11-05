@@ -7,9 +7,9 @@ export const metadata: Metadata = { title: "보도자료" };
 export default function Page() {
   return (
     <PageShell
-      title={{ ko: "보도자료", en: "Press" }}
+      title={{ ko: "보도자료", en: "Newsroom" }}
       lead={{ ko: "영남에너지서비스의 최근 소식입니다.", en: "The latest news from Yeongnam Energy Service." }}
-      crumbs={[CRUMB.about, { label: { ko: "보도자료", en: "Press" } }]}
+      crumbs={[CRUMB.about, { label: { ko: "보도자료", en: "Newsroom" } }]}
     >
       <Press />
     </PageShell>

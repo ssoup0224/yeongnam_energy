@@ -72,7 +72,7 @@ export default function SafetyPage() {
   return (
     <>
       <PageHero
-        title={<T ko="가스 안전사용 요령" en="Safe gas-use tips" />}
+        title={<T ko="가스 안전사용 요령" en="Gas Safety Tips" />}
         lead={
           <T
             ko="가스는 바르게 쓰면 안전합니다. 냄새가 날 때의 행동요령부터 먼저 확인하세요."

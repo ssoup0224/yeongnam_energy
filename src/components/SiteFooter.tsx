@@ -89,7 +89,7 @@ export default function SiteFooter() {
       <div className="border-t border-ink-100">
         <div className="shell flex flex-col gap-5 py-8 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            {/* Official SK innovation E&S CI, swapped by language */}
+            {/* Official SK Innovation E&S CI, swapped by language */}
             <BrandLogo className="h-7" />
             <div className="mt-3 flex items-center gap-2 text-base font-extrabold text-ink-900">
               {pick(SITE.company, lang)}

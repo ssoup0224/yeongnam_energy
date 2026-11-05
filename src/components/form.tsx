@@ -27,9 +27,12 @@ export function maxVisitDate() {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
+export const isIsoDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v);
+
 /** Visit-date rule shared by every booking: tomorrow → 60 days, no Sundays. */
 export function visitDateError(iso: string): Bi | null {
   if (!iso) return { ko: "방문 희망일을 선택해 주세요.", en: "Please choose a visit date." };
+  if (!isIsoDate(iso)) return { ko: "날짜를 연도. 월. 일. 형식으로 정확히 입력해 주세요.", en: "Enter a valid date as YYYY. MM. DD." };
   if (iso < minVisitDate()) return { ko: "방문은 내일 이후로 예약할 수 있습니다.", en: "Visits can be booked from tomorrow." };
   if (iso > maxVisitDate()) return { ko: "60일 이내의 날짜를 선택해 주세요.", en: "Choose a date within 60 days." };
   if (new Date(`${iso}T12:00:00`).getDay() === 0)

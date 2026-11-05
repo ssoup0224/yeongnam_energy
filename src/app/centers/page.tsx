@@ -12,7 +12,7 @@ export default function CentersPage() {
   return (
     <>
       <PageHero
-        title={<T ko="우리 동네 서비스센터 찾기" en="Find your local service center" />}
+        title={<T ko="우리 동네 서비스센터 찾기" en="Find a Service Center" />}
         lead={
           <T
             ko="방문 신청, 안전점검, 시설 문의는 담당 센터로 연락하시면 더 빠릅니다."

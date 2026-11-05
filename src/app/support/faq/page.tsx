@@ -9,7 +9,7 @@ export default function FaqPage() {
   return (
     <>
       <PageHero
-        title={<T ko="자주 묻는 질문" en="Frequently asked questions" />}
+        title={<T ko="자주 묻는 질문" en="Frequently Asked Questions" />}
         lead={
           <T
             ko="고객센터로 가장 많이 들어오는 질문과 답변입니다. 찾는 내용이 없으면 온라인 상담을 이용하세요."

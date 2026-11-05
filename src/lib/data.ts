@@ -271,6 +271,12 @@ export const CARDS: Bi[] = [
   { ko: "하나카드", en: "Hana Card" },
 ];
 
+/** Stored institution names are Korean; show them in the page language. */
+export function institutionLabel(name: string, lang: "ko" | "en") {
+  const hit = [...BANKS, ...CARDS].find((b) => b.ko === name || b.en === name);
+  return hit ? hit[lang] : name;
+}
+
 export const EASY_PAY: { id: string; label: Bi }[] = [
   { id: "kakao", label: { ko: "카카오페이", en: "KakaoPay" } },
   { id: "naver", label: { ko: "네이버페이", en: "Naver Pay" } },

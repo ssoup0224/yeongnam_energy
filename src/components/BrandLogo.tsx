@@ -1,4 +1,4 @@
-/* Official SK innovation E&S CI, swapped by language with a pure-CSS
+/* Official SK Innovation E&S CI, swapped by language with a pure-CSS
    show/hide (see globals.css .only-ko/.only-en). Stays a Server Component
    so it renders instantly with no hydration flash. */
 export default function BrandLogo({ className = "" }: { className?: string }) {
@@ -14,7 +14,7 @@ export default function BrandLogo({ className = "" }: { className?: string }) {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/brand/sk-ci-en.png"
-        alt="SK innovation E&S"
+        alt="SK Innovation E&S"
         className="only-en h-full w-auto"
         draggable={false}
       />

@@ -75,21 +75,21 @@ export default function BillStatement({
 
         <dl className="mt-4 divide-y divide-ink-100 rounded-2xl border border-ink-200">
           {[
-            { k: t("기본요금", "Base charge"), v: bill.base },
             { k: t(`사용요금 (${latest}㎥ × ${tariff.unit.toLocaleString()}원)`, `Usage (${latest}㎥ × ₩${tariff.unit.toLocaleString()})`), v: bill.energy },
+            { k: t("기본요금", "Base charge"), v: bill.base },
             { k: t("부가가치세 (10%)", "VAT (10%)"), v: bill.vat },
             ...(discount ? [{ k: t("할인 (자동이체·전자고지)", "Discounts (auto-pay / e-bill)"), v: -discount }] : []),
           ].map((row) => (
             <div key={row.k} className="flex items-center justify-between gap-4 px-4 py-3">
               <dt className="text-[0.875rem] text-ink-600">{row.k}</dt>
-              <dd className={`text-[0.9375rem] font-bold tabular-nums ${row.v < 0 ? "text-sk-orange-600" : "text-ink-900"}`}>
+              <dd className={`shrink-0 whitespace-nowrap text-[0.9375rem] font-bold tabular-nums ${row.v < 0 ? "text-sk-orange-600" : "text-ink-900"}`}>
                 {row.v < 0 ? "−" : ""}{won(Math.abs(row.v), lang)}
               </dd>
             </div>
           ))}
           <div className="flex items-center justify-between gap-4 bg-ink-50 px-4 py-3.5">
             <dt className="text-[0.9375rem] font-extrabold text-ink-900">{t("합계 (10원 미만 절사)", "Total (rounded down to ₩10)")}</dt>
-            <dd className="text-lg font-extrabold tabular-nums text-sk-red-600">{won(bill.total, lang)}</dd>
+            <dd className="shrink-0 whitespace-nowrap text-lg font-extrabold tabular-nums text-sk-red-600">{won(bill.total, lang)}</dd>
           </div>
         </dl>
 

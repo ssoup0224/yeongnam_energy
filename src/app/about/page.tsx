@@ -60,7 +60,7 @@ export default function AboutPage() {
   return (
     <>
       <PageHero
-        title={<T ko="회사소개" en="About us" />}
+        title={<T ko="회사소개" en="About Us" />}
         lead={
           <T
             ko={`${SITE.company.ko}는 ${SITE.group.ko}의 도시가스 공급사로, 포항 지역의 에너지를 책임지고 있습니다.`}
@@ -68,7 +68,7 @@ export default function AboutPage() {
           />
         }
         crumbs={[
-          { label: <T ko="회사소개" en="About us" />, href: "/about" },
+          { label: <T ko="회사소개" en="About Us" />, href: "/about" },
           { label: <T ko="회사 개요" en="Overview" /> },
         ]}
         tone="brand"

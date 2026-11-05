@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { CERT_KINDS, dateLabel, digitsOnly, lookupAccount, periodLabel, SELF_CHECK, slotLabel, stamp, won } from "@/lib/data";
+import { CERT_KINDS, dateLabel, digitsOnly, institutionLabel, lookupAccount, periodLabel, SELF_CHECK, slotLabel, stamp, won } from "@/lib/data";
 import { pick, useLang, useT } from "@/lib/i18n";
 import { useAuth, type User } from "@/lib/auth";
 import { REQUEST_META, requestStatus, useStore } from "@/lib/store";
@@ -265,7 +265,7 @@ function MyPageInner({ user }: { user: User }) {
         <SectionTitle>{t("납부·안내 설정", "Billing & alerts")}</SectionTitle>
         <ul className="divide-y divide-ink-100 text-[0.9375rem]">
           {[
-            { k: t("자동이체", "Auto-pay"), v: s.autoPay ? `${s.autoPay.institution} ****${s.autoPay.last4}` : t("미등록", "Not set"), href: "/bill/auto" },
+            { k: t("자동이체", "Auto-pay"), v: s.autoPay ? `${institutionLabel(s.autoPay.institution, lang)} ****${s.autoPay.last4}` : t("미등록", "Not set"), href: "/bill/auto" },
             { k: t("청구서", "Bill type"), v: s.billType === "paper" ? t("종이", "Paper") : s.billType === "mobile" ? t("모바일", "Mobile") : `${t("이메일", "Email")} (${s.billEmail})`, href: "/bill/type" },
             { k: t("문자 안내", "Text alerts"), v: s.sms.enabled ? t(`${s.sms.topics.length}개 수신 중`, `${s.sms.topics.length} on`) : t("받지 않음", "Off"), href: "/safety/sms" },
           ].map((row) => (

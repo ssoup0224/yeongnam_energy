@@ -11,6 +11,7 @@ import {
   digitsOnly,
   DISCOUNTS,
   formatCustomerNo,
+  institutionLabel,
   lookupAccount,
   TARIFFS,
   todayISO,
@@ -127,7 +128,7 @@ export function CombinedBill() {
   return (
     <div className="space-y-4">
       <Card>
-        <SectionTitle sub={t("임대인·상가 관리자용 — 최대 10개 호실의 이번 달 요금을 한 번에 확인합니다. 체험용: 1234-567-890 또는 아무 10자리 번호", "For landlords and managers — check up to 10 units at once. Demo: 1234-567-890 or any 10 digits")}>
+        <SectionTitle sub={t("임대인·상가 관리자용 — 최대 10개 호실의 이번 달 요금을 한 번에 확인합니다.", "For landlords and building managers — check up to 10 units at once.")}>
           {t("고객번호 입력", "Customer numbers")}
         </SectionTitle>
         <form onSubmit={lookup} noValidate className="space-y-3">
@@ -279,7 +280,7 @@ function AutoPayInner() {
       <Receipt
         title={t("자동이체가 등록되었습니다", "Auto-pay is set up")}
         rows={[
-          [t("출금 수단", "Source"), `${saved.institution} ****${saved.last4}`],
+          [t("출금 수단", "Source"), `${institutionLabel(saved.institution, lang)} ****${saved.last4}`],
           [t("예금주", "Holder"), saved.holder],
           [t("출금일", "Withdrawal"), t("매월 납기일(25일)", "Each due date (25th)")],
           [t("요금 할인", "Discount"), t("매월 200원", "₩200 / month")],
@@ -302,7 +303,7 @@ function AutoPayInner() {
         {current ? (
           <div data-autopay="on" className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-emerald-50 p-4">
             <div>
-              <p className="font-extrabold text-emerald-800">{current.institution} ****{current.last4}</p>
+              <p className="font-extrabold text-emerald-800">{institutionLabel(current.institution, lang)} ****{current.last4}</p>
               <p className="mt-0.5 text-[0.8125rem] text-emerald-700">
                 {current.holder} · {t(`${dateLabel(current.since, lang)}부터`, `since ${dateLabel(current.since, lang)}`)} · {t("월 200원 할인 중", "₩200/mo discount")}
               </p>

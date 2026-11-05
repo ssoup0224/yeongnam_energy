@@ -141,7 +141,7 @@ export default function RateCalculator() {
                   className="size-5 accent-[#EA002C]"
                 />
                 <span className="text-[0.875rem] font-bold text-ink-800">{d.label}</span>
-                <span className="ml-auto text-[0.875rem] font-bold tabular-nums text-ink-500">
+                <span className="ml-auto shrink-0 whitespace-nowrap text-[0.875rem] font-bold tabular-nums text-ink-500">
                   −{money(d.amount, lang)}
                 </span>
               </label>
@@ -174,7 +174,6 @@ export default function RateCalculator() {
 
           <dl className="mt-4 divide-y divide-ink-100 rounded-2xl border border-ink-200">
             {[
-              { label: t("기본요금", "Base charge"), value: tariff.base },
               {
                 label: t(
                   `사용요금 (${usage}㎥ × ${tariff.unit.toLocaleString("ko-KR")}원)`,
@@ -182,13 +181,14 @@ export default function RateCalculator() {
                 ),
                 value: calc.energy,
               },
+              { label: t("기본요금", "Base charge"), value: tariff.base },
               { label: t("부가가치세 (10%)", "VAT (10%)"), value: calc.vat },
               ...(calc.discount ? [{ label: t("할인액", "Discount"), value: -calc.discount }] : []),
             ].map((row) => (
               <div key={row.label} className="flex items-center justify-between gap-4 px-4 py-3.5">
                 <dt className="text-[0.875rem] text-ink-600">{row.label}</dt>
                 <dd
-                  className={`text-[0.9375rem] font-bold tabular-nums ${
+                  className={`shrink-0 whitespace-nowrap text-[0.9375rem] font-bold tabular-nums ${
                     row.value < 0 ? "text-sk-orange-600" : "text-ink-900"
                   }`}
                 >

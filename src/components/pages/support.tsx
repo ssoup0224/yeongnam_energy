@@ -111,7 +111,7 @@ export function Certificates() {
         <Card>
           <SectionTitle>{t("발급 대상", "Details")}</SectionTitle>
           <div className="space-y-5">
-            <Field id="certNo" label={t("고객번호", "Customer number")} required error={errors.certNo} help={user ? t("회원님 고객번호로 채웠습니다.", "Filled with your customer number.") : t("체험용: 1234-567-890", "Demo: 1234-567-890")}>
+            <Field id="certNo" label={t("고객번호", "Customer number")} required error={errors.certNo} help={user ? t("회원님 고객번호로 채웠습니다.", "Filled with your customer number.") : t("청구서 오른쪽 위 10자리 숫자", "The 10 digits at the top right of your bill")}>
               <input id="certNo" value={customer} inputMode="numeric" onChange={(e) => setNo(e.target.value)} className={inputCls(!!errors.certNo)} placeholder="1234-567-890" />
             </Field>
             {needsPeriod ? (

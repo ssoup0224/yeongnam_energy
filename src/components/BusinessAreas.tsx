@@ -45,7 +45,7 @@ export default function BusinessAreas() {
             href="/about"
             className="hidden shrink-0 items-center gap-1 rounded-full border border-ink-200 px-4 py-2.5 text-sm font-bold text-ink-700 hover:border-ink-300 sm:inline-flex"
           >
-            {t("회사소개", "About us")} <IconArrowRight className="size-4" />
+            {t("회사소개", "About Us")} <IconArrowRight className="size-4" />
           </Link>
         </div>
 

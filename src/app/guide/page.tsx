@@ -16,7 +16,7 @@ export default function GuidePage() {
   return (
     <>
       <PageHero
-        title={<T ko="이럴 땐 이렇게 하세요" en="Here's what to do" />}
+        title={<T ko="이럴 땐 이렇게 하세요" en="Guides by Situation" />}
         lead={
           <T
             ko="메뉴 이름을 몰라도 괜찮습니다. 지금 처한 상황을 고르시면 처음부터 끝까지 순서대로 안내해 드립니다."

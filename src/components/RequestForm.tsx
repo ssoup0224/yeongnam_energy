@@ -13,6 +13,7 @@ import {
   inputCls,
   isCustomerNo,
   isEmail,
+  isIsoDate,
   isTel,
   maxVisitDate,
   minVisitDate,
@@ -23,6 +24,7 @@ import {
   visitDateError,
 } from "./form";
 import { IconArrowRight, IconClose, IconUpload } from "./Icons";
+import DateInput from "./DateInput";
 
 type Opt = { value: string; label: Bi; sub?: Bi };
 
@@ -143,6 +145,10 @@ function Inner({
             f.kind === "select" || f.kind === "radio"
               ? t("항목을 선택해 주세요.", "Please choose an option.")
               : t("내용을 입력해 주세요.", "This field is required.");
+          continue;
+        }
+        if (v && f.kind === "date" && !isIsoDate(v)) {
+          e[f.name] = t("날짜를 연도. 월. 일. 형식으로 정확히 입력해 주세요.", "Enter a valid date as YYYY. MM. DD.");
           continue;
         }
         if (v && f.kind === "tel" && !isTel(v)) e[f.name] = t("연락처 형식을 확인해 주세요.", "Check the phone number format.");
@@ -280,7 +286,7 @@ function Inner({
               </Field>
             ) : null}
             {applicant.customerNo ? (
-              <Field id="customerNo" label={t("고객번호", "Customer number")} required={applicant.customerNo === "required"} error={errors.customerNo} help={t("청구서 오른쪽 위 10자리 숫자 (예: 1234-567-890)", "The 10 digits at the top right of your bill (e.g. 1234-567-890)")}>
+              <Field id="customerNo" label={t("고객번호", "Customer number")} required={applicant.customerNo === "required"} error={errors.customerNo} help={t("청구서 오른쪽 위 10자리 숫자", "The 10 digits at the top right of your bill")}>
                 <input id="customerNo" value={customerNo} onChange={(e) => setCustomerNo(e.target.value)} inputMode="numeric" className={inputCls(!!errors.customerNo)} placeholder="1234-567-890" />
               </Field>
             ) : null}
@@ -345,6 +351,8 @@ function Inner({
                       <textarea id={f.name} value={v} maxLength={f.maxLength} onChange={(e) => set(f.name, e.target.value)} rows={5} className={`${inputCls(!!err)} min-h-32 resize-y`} placeholder={ph} />
                       {f.maxLength ? <p className="mt-1 text-right text-[0.75rem] tabular-nums text-ink-400">{v.length} / {f.maxLength}</p> : null}
                     </>
+                  ) : f.kind === "date" ? (
+                    <DateInput id={f.name} value={v} min={f.min} max={f.max} onChange={(iso) => set(f.name, iso)} invalid={!!err} />
                   ) : f.kind === "select" ? (
                     <select id={f.name} value={v} onChange={(e) => set(f.name, e.target.value)} className={inputCls(!!err)}>
                       <option value="">{t("선택해 주세요", "Select…")}</option>
@@ -380,7 +388,7 @@ function Inner({
           </SectionTitle>
           <div className="space-y-5">
             <Field id="date" label={t("방문 희망일", "Visit date")} required error={errors.date}>
-              <input id="date" type="date" value={date} min={minVisitDate()} max={maxVisitDate()} onChange={(e) => setDate(e.target.value)} className={inputCls(!!errors.date)} />
+              <DateInput id="date" value={date} min={minVisitDate()} max={maxVisitDate()} onChange={setDate} invalid={!!errors.date} />
             </Field>
             <fieldset data-field="slot">
               <legend className="text-[0.875rem] font-bold text-ink-800">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
 import { IconTextSize } from "./Icons";
 
 const STEPS = [
@@ -12,6 +12,7 @@ const STEPS = [
 
 export default function TextSizeControl({ compact = false }: { compact?: boolean }) {
   const t = useT();
+  const { lang } = useLang();
   const [active, setActive] = useState(0);
 
   useEffect(() => {
@@ -50,7 +51,7 @@ export default function TextSizeControl({ compact = false }: { compact?: boolean
               ? "bg-ink-900 text-white"
               : "text-ink-600 hover:bg-ink-100"}`}
         >
-          <span aria-hidden style={{ fontSize: `${0.72 + i * 0.12}rem` }}>가</span>
+          <span aria-hidden style={{ fontSize: `${0.72 + i * 0.12}rem` }}>{lang === "en" ? "A" : "가"}</span>
         </button>
       ))}
     </div>

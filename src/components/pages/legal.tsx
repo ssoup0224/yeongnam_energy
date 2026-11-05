@@ -129,7 +129,7 @@ export function Privacy() {
 const A11Y: Section[] = [
   { id: "a1", title: { ko: "준수 기준", en: "Standard" }, body: [{ ko: "이 사이트는 한국형 웹 콘텐츠 접근성 지침(KWCAG) 2.2와 WCAG 2.1 AA 수준을 목표로 설계했습니다.", en: "This site is designed to meet KWCAG 2.2 and WCAG 2.1 level AA." }] },
   { id: "a2", title: { ko: "주요 접근성 기능", en: "Accessibility features" }, body: [{ list: [
-    { ko: "글자 크기 3단계 조절 (상단 '가 가 가' 버튼, 설정은 기억됩니다)", en: "Three text sizes (the '가 가 가' buttons at the top; your choice is remembered)" },
+    { ko: "글자 크기 3단계 조절 (상단 '가 가 가' 버튼, 설정은 기억됩니다)", en: "Three text sizes (the “A A A” buttons at the top; your choice is remembered)" },
     { ko: "한국어·영어 전환 (상단 한국어 / ENG)", en: "Korean / English switch (top bar)" },
     { ko: "'본문 바로가기' 링크와 일관된 페이지 구조(머리말·본문·꼬리말)", en: "A 'skip to content' link and consistent landmarks (header, main, footer)" },
     { ko: "모든 기능을 키보드만으로 이용 가능, 눈에 잘 띄는 초점 표시", en: "Everything works by keyboard, with a clearly visible focus ring" },
