@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { BANKS, CARDS, EASY_PAY, institutionLabel, periodLabel, won } from "@/lib/data";
+import { BANKS, CARDS, EASY_PAY, institutionLabel, paymentMethodLabel, periodLabel, won } from "@/lib/data";
 import { pick, useLang, useT } from "@/lib/i18n";
 import { useStore, type Payment } from "@/lib/store";
 import { InfoBox, PrimaryButton, RadioCards } from "./form";
@@ -129,7 +129,7 @@ export default function PayDialog({
             <p className="mt-3 text-lg font-extrabold text-ink-900">{t("납부가 완료되었습니다", "Payment complete")}</p>
             <dl className="mt-4 divide-y divide-ink-100 rounded-2xl border border-ink-200 text-left text-[0.875rem]">
               <div className="flex justify-between gap-4 px-4 py-3"><dt className="text-ink-500">{t("승인번호", "Approval no.")}</dt><dd data-approval className="font-bold tabular-nums">{paid.id}</dd></div>
-              <div className="flex justify-between gap-4 px-4 py-3"><dt className="text-ink-500">{t("결제 수단", "Method")}</dt><dd className="font-bold">{paid.method}</dd></div>
+              <div className="flex justify-between gap-4 px-4 py-3"><dt className="text-ink-500">{t("결제 수단", "Method")}</dt><dd className="font-bold">{paymentMethodLabel(paid.method, lang)}</dd></div>
             </dl>
             <PrimaryButton type="button" onClick={onClose} className="mt-5 w-full">{t("확인", "Done")}</PrimaryButton>
           </div>

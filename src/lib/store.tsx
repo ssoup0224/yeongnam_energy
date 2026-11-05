@@ -51,7 +51,7 @@ export const REQUEST_META: Record<RequestType, { label: Bi; prefix: string; visi
   leak: { label: { ko: "가스누출 신고", en: "Leak report" }, prefix: "LK", visit: false },
   ethics: { label: { ko: "윤리경영 제보", en: "Ethics report" }, prefix: "ET", visit: false },
   discount: { label: { ko: "요금경감 신청", en: "Discount application" }, prefix: "DC", visit: false },
-  inspection: { label: { ko: "안전점검 일정변경", en: "Inspection reschedule" }, prefix: "IN", visit: true },
+  inspection: { label: { ko: "안전점검 예약", en: "Safety inspection" }, prefix: "IN", visit: true },
 };
 
 export type ServiceRequest = {

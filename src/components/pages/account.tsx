@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { CERT_KINDS, dateLabel, digitsOnly, institutionLabel, lookupAccount, periodLabel, SELF_CHECK, slotLabel, stamp, won } from "@/lib/data";
+import { CERT_KINDS, dateLabel, digitsOnly, institutionLabel, lookupAccount, paymentMethodLabel, periodLabel, SELF_CHECK, slotLabel, stamp, won } from "@/lib/data";
 import { pick, useLang, useT } from "@/lib/i18n";
 import { useAuth, type User } from "@/lib/auth";
 import { REQUEST_META, requestStatus, useStore } from "@/lib/store";
@@ -313,7 +313,7 @@ function MyPageInner({ user }: { user: User }) {
             <ul className="divide-y divide-ink-100 text-[0.875rem]">
               {payments.map((p) => (
                 <li key={p.id} className="flex items-center justify-between gap-3 py-2.5">
-                  <span><span className="block font-bold text-ink-900">{periodLabel(p.period, lang)}</span><span className="block text-[0.75rem] text-ink-500">{p.method} · {stamp(p.createdAt)}</span></span>
+                  <span><span className="block font-bold text-ink-900">{periodLabel(p.period, lang)}</span><span className="block text-[0.75rem] text-ink-500">{paymentMethodLabel(p.method, lang)} · {stamp(p.createdAt)}</span></span>
                   <span className="font-extrabold tabular-nums">{won(p.amount, lang)}</span>
                 </li>
               ))}

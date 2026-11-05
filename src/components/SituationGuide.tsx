@@ -60,7 +60,7 @@ const GROUPS: Group[] = [
     },
     steps: [
       { n: 1, label: { ko: "SMS 사전안내", en: "SMS notice" }, desc: { ko: "방문 7일 전 발송", en: "Sent 7 days before" }, href: "/safety/sms" },
-      { n: 2, label: { ko: "일정 조정", en: "Adjust schedule" }, desc: { ko: "안 맞으면 변경 신청", en: "Reschedule if needed" }, href: "/move/reservation" },
+      { n: 2, label: { ko: "일정 조정", en: "Adjust schedule" }, desc: { ko: "안 맞으면 원하는 날로 예약", en: "Book another day if needed" }, href: "/safety/inspection" },
       { n: 3, label: { ko: "점검원 확인", en: "Verify inspector" }, desc: { ko: "신분증 꼭 확인하세요", en: "Always check the ID" }, href: "/safety/inspection" },
       { n: 4, label: { ko: "결과 확인", en: "Check result" }, desc: { ko: "점검 결과지 수령", en: "Receive the report" }, href: "/safety/inspection" },
     ],

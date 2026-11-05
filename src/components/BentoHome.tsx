@@ -141,7 +141,7 @@ function AccountTile({ user }: { user: User }) {
     <section className="relative col-span-2 flex flex-col overflow-hidden rounded-[1.5rem] bg-ink-900 p-7 text-white lg:col-span-7 lg:p-9">
       <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 size-64 rounded-full sk-gradient opacity-30 blur-2xl" />
       <div className="relative">
-        <p className="text-[0.9375rem] text-white/70">{t(`안녕하세요, ${name}님`, `Hello, ${name}`)}</p>
+        <h1 className="text-[0.9375rem] font-normal text-white/70">{t(`안녕하세요, ${name}님`, `Hello, ${name}`)}</h1>
         <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] text-white/50">
           <span>{pick(user.address, lang)}</span>
           <span className="inline-flex items-center gap-1.5">

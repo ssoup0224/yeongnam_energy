@@ -19,6 +19,7 @@ import { pick, useLang, useT, type Bi } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useStore, type Reading } from "@/lib/store";
 import CustomerLookup from "../CustomerLookup";
+import InspectionBooking, { nextInspection } from "../InspectionBooking";
 import RequestForm, { STANDARD_CONSENT } from "../RequestForm";
 import RequireLogin from "../RequireLogin";
 import {
@@ -41,42 +42,23 @@ import { IconAlert, IconArrowRight, IconCheck, IconPhone, IconShield } from "../
 export function Inspection() {
   const t = useT();
   const { lang } = useLang();
-  const [dong, setDong] = useState("");
+  const { user } = useAuth();
+  const memberDong = user ? lookupAccount(user.customerDigits)?.dong ?? "" : "";
+  const [picked, setPicked] = useState<string | null>(null);
+  const dong = picked ?? (INSPECTION_AREAS.some((a) => a.dong.ko === memberDong) ? memberDong : "");
   const area = INSPECTION_AREAS.find((a) => a.dong.ko === dong);
-  const now = currentPeriod();
-  const next = area ? ([area.first, area.second].find((p) => p >= now) ?? `${Number(now.slice(0, 4)) + 1}${area.first.slice(4)}`) : null;
+  const next = dong ? nextInspection(dong) : null;
 
   return (
     <div className="space-y-6">
-      <Card>
-        <SectionTitle sub={t("도시가스사업법에 따라 모든 세대는 연 2회 이상 안전점검을 받아야 합니다.", "By law every household must be inspected at least twice a year.")}>
-          {t("점검은 이렇게 진행됩니다", "How inspection works")}
-        </SectionTitle>
-        <ol className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-          {[
-            t("방문 7일 전 SMS로 일정 안내", "SMS 7 days before"),
-            t("사원증 확인 후 입실", "Check the inspector's ID"),
-            t("누출·배관·연소기 점검 (약 15분)", "Leak, pipe and appliance check (~15 min)"),
-            t("점검 결과지 수령", "Receive the report"),
-          ].map((s, i) => (
-            <li key={s} className="rounded-xl bg-ink-50 p-4">
-              <span className="flex size-7 items-center justify-center rounded-full sk-gradient text-[0.8125rem] font-extrabold text-white">{i + 1}</span>
-              <p className="mt-2 text-[0.875rem] font-bold text-ink-800">{s}</p>
-            </li>
-          ))}
-        </ol>
-      </Card>
+      <InspectionBooking dong={dong} onDong={setPicked} />
 
-      <Card>
-        <SectionTitle sub={t("우리 동네의 이번 해 점검 시기를 확인하세요.", "See when your area is inspected this year.")}>{t("우리 동네 점검 일정", "Inspection dates near you")}</SectionTitle>
-        <Field id="dong" label={t("읍·면·동", "Neighbourhood")}>
-          <select id="dong" value={dong} onChange={(e) => setDong(e.target.value)} className={inputCls()}>
-            <option value="">{t("선택해 주세요", "Select…")}</option>
-            {INSPECTION_AREAS.map((a) => <option key={a.dong.ko} value={a.dong.ko}>{pick(a.dong, lang)}</option>)}
-          </select>
-        </Field>
-        {area && next ? (
-          <div className="fade-up mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3" aria-live="polite">
+      {area && next ? (
+        <Card>
+          <SectionTitle sub={t("선택한 지역의 올해 정기점검 시기입니다.", "Regular inspection months for the selected area.")}>
+            {t(`${pick(area.dong, lang)} 정기점검 일정`, `${pick(area.dong, lang)} inspection schedule`)}
+          </SectionTitle>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3" aria-live="polite">
             <div className="rounded-xl bg-ink-50 p-4">
               <p className="text-[0.8125rem] text-ink-500">{t("상반기", "First round")}</p>
               <p className="mt-1 font-extrabold text-ink-900">{periodLabel(area.first, lang)}</p>
@@ -90,38 +72,27 @@ export function Inspection() {
               <p data-next-inspection className="mt-1 font-extrabold text-sk-orange-800">{periodLabel(next, lang)}</p>
             </div>
           </div>
-        ) : null}
-      </Card>
+        </Card>
+      ) : null}
 
-      <div>
-        <h2 className="mb-1 text-lg font-extrabold text-ink-900">{t("점검 일정 변경 신청", "Reschedule your inspection")}</h2>
-        <p className="mb-3 text-[0.875rem] text-ink-500">{t("안내받은 날짜가 어렵다면 원하는 날짜로 바꿔 드립니다.", "If the notified date doesn't suit you, pick another.")}</p>
-        <RequestForm
-          type="inspection"
-          applicant={{ customerNo: "optional" }}
-          sections={[
-            {
-              title: { ko: "변경 사유", en: "Reason" },
-              fields: [
-                {
-                  name: "reason",
-                  kind: "select",
-                  required: true,
-                  label: { ko: "사유", en: "Reason" },
-                  options: [
-                    { value: "absent", label: { ko: "안내일에 부재", en: "Away on that day" } },
-                    { value: "time", label: { ko: "시간대 변경", en: "Different time" } },
-                    { value: "missed", label: { ko: "점검을 받지 못함", en: "Missed the visit" } },
-                  ],
-                },
-              ],
-            },
-          ]}
-          schedule={{ title: { ko: "희망 점검일", en: "Preferred date" } }}
-          consent={STANDARD_CONSENT}
-          submitLabel={{ ko: "일정 변경 신청", en: "Request new date" }}
-        />
-      </div>
+      <Card>
+        <SectionTitle sub={t("도시가스사업법에 따라 모든 세대는 연 2회 이상 안전점검을 받아야 합니다.", "By law every household must be inspected at least twice a year.")}>
+          {t("점검은 이렇게 진행됩니다", "How inspection works")}
+        </SectionTitle>
+        <ol className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+          {[
+            t("예약 또는 방문 7일 전 문자 안내", "Book, or get a text 7 days ahead"),
+            t("사원증 확인 후 입실", "Check the inspector's ID"),
+            t("누출·배관·연소기 점검 (약 15분)", "Leak, pipe and appliance check (~15 min)"),
+            t("점검 결과지 수령", "Receive the report"),
+          ].map((s, i) => (
+            <li key={s} className="rounded-xl bg-ink-50 p-3 sm:p-4">
+              <span className="flex size-7 items-center justify-center rounded-full sk-gradient text-[0.8125rem] font-extrabold text-white">{i + 1}</span>
+              <p className="mt-2 text-[0.8125rem] font-bold leading-snug text-ink-800 sm:text-[0.875rem]">{s}</p>
+            </li>
+          ))}
+        </ol>
+      </Card>
     </div>
   );
 }

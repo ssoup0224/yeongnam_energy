@@ -65,7 +65,7 @@ export const NAV: NavItem[] = [
     href: "/safety",
     children: [
       { label: { ko: "가스 안전사용 요령", en: "Gas Safety Tips" }, href: "/safety", desc: { ko: "안전하게 쓰는 법이 궁금하신가요?", en: "How do I use gas safely?" } },
-      { label: { ko: "가스시설 점검 안내", en: "Safety Inspections" }, href: "/safety/inspection", desc: { ko: "점검은 언제 받나요?", en: "When is my inspection?" } },
+      { label: { ko: "안전점검 예약", en: "Book an Inspection" }, href: "/safety/inspection", desc: { ko: "점검 날짜를 정하시겠어요?", en: "Need an inspection date?" } },
       { label: { ko: "자가검침 입력", en: "Submit a Meter Reading" }, href: "/safety/meter", desc: { ko: "계량기를 직접 읽으셨나요?", en: "Read your own meter?" } },
       { label: { ko: "온라인 자율점검", en: "Home Safety Self-check" }, href: "/safety/self", desc: { ko: "집에서 직접 점검해 볼까요?", en: "Want to check at home?" } },
       { label: { ko: "안전점검 문자 안내", en: "Inspection Text Alerts" }, href: "/safety/sms", desc: { ko: "점검 일정을 문자로 받을까요?", en: "Want a text before visits?" } },

@@ -178,6 +178,8 @@ export function Reservation() {
               <Link href="/move/in" className="font-bold text-sk-red-600 underline underline-offset-2">{t("전입신청", "Move-in")}</Link>
               {" · "}
               <Link href="/move/out" className="font-bold text-sk-red-600 underline underline-offset-2">{t("전출신청", "Move-out")}</Link>
+              {" · "}
+              <Link href="/safety/inspection" className="font-bold text-sk-red-600 underline underline-offset-2">{t("안전점검 예약", "Safety inspection")}</Link>
             </p>
           )}
         </Card>
@@ -221,6 +223,8 @@ function RequestDetail({ r }: { r: ServiceRequest }) {
     const e = visitDateError(date);
     if (e) return setErr(pick(e, lang));
     if (!slot) return setErr(t("시간대를 선택해 주세요.", "Choose a time slot."));
+    if (r.type === "inspection" && new Date(`${date}T12:00:00`).getDay() === 6 && slot !== "am")
+      return setErr(t("토요일 안전점검은 오전에만 방문합니다.", "Saturday inspections are mornings only."));
     updateRequest(r.id, { date, slot });
     setErr("");
     setEditing(false);

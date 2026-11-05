@@ -62,7 +62,7 @@ const DONT: Bi[] = [
 ];
 
 const RELATED: { label: Bi; href: string }[] = [
-  { label: { ko: "가스시설 정기 점검 안내", en: "Regular facility inspection" }, href: "/safety/inspection" },
+  { label: { ko: "안전점검 예약하기", en: "Book a safety inspection" }, href: "/safety/inspection" },
   { label: { ko: "안전점검 SMS 사전안내 신청", en: "Inspection SMS notice" }, href: "/safety/sms" },
   { label: { ko: "자가검침 입력하기", en: "Submit a self meter reading" }, href: "/safety/meter" },
   { label: { ko: "가스누출 신고 접수", en: "Report a gas leak" }, href: "/safety/report" },

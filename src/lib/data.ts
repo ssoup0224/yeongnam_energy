@@ -283,6 +283,17 @@ export const EASY_PAY: { id: string; label: Bi }[] = [
   { id: "toss", label: { ko: "토스페이", en: "Toss Pay" } },
 ];
 
+/** Payment methods are saved as text in the language used at the time;
+ *  re-render the known parts (banks, cards, easy pay, instalments) in `lang`. */
+export function paymentMethodLabel(saved: string, lang: Lang) {
+  const from: Lang = lang === "en" ? "ko" : "en";
+  let out = saved;
+  for (const b of [...BANKS, ...CARDS, ...EASY_PAY.map((e) => e.label)]) out = out.split(b[from]).join(b[lang]);
+  return lang === "en"
+    ? out.replace("일시불", "full payment").replace(/(\d+)개월/, "$1 months")
+    : out.replace("full payment", "일시불").replace(/(\d+) months/, "$1개월");
+}
+
 /* ── visit time slots ───────────────────────────────────────── */
 
 export const SLOTS: { key: string; label: Bi }[] = [
