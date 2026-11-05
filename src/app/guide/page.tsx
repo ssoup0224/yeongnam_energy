@@ -29,38 +29,22 @@ export default function GuidePage() {
       <div className="shell py-10 lg:py-14">
         <SituationGuide standalone />
 
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-          <a
-            href={`tel:${SITE.callCenter}`}
-            className="group flex flex-1 items-center gap-4 rounded-[1.25rem] border border-ink-200 bg-white p-5 transition hover:border-sk-red-300"
-          >
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-sk-red-50 text-sk-red-600">
-              <IconPhone className="size-5" />
-            </span>
-            <span className="min-w-0">
-              <span className="block text-[0.75rem] text-ink-500">
-                <T ko="직접 여쭤보고 싶다면" en="Prefer to ask us directly?" />
-              </span>
-              <span className="block text-lg font-extrabold tabular-nums text-ink-900">
-                {SITE.callCenter}
-              </span>
-            </span>
+        {/* Secondary help — deliberately quiet so the steps above lead. */}
+        <p className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[0.875rem] text-ink-500">
+          <a href={`tel:${SITE.callCenter}`} className="inline-flex min-h-9 items-center gap-1.5 hover:text-ink-900">
+            <IconPhone className="size-4 text-ink-400" />
+            <T ko="직접 여쭤보고 싶다면" en="Prefer to ask us?" />{" "}
+            <strong className="font-bold tabular-nums text-ink-800 underline-offset-2 hover:underline">{SITE.callCenter}</strong>
           </a>
-          <Link
-            href="/sitemap"
-            className="group flex flex-1 items-center gap-4 rounded-[1.25rem] border border-ink-200 bg-white p-5 transition hover:border-sk-red-300"
-          >
-            <span className="min-w-0">
-              <span className="block text-[0.75rem] text-ink-500">
-                <T ko="찾는 업무가 없나요?" en="Can't find your task?" />
-              </span>
-              <span className="block text-[0.9375rem] font-extrabold text-ink-900">
-                <T ko="전체 메뉴에서 찾아보기" en="Browse the full menu" />
-              </span>
-            </span>
-            <IconArrowRight className="ml-auto size-4 shrink-0 text-ink-300 transition group-hover:translate-x-1 group-hover:text-sk-red-500" />
+          <span className="hidden h-3.5 w-px bg-ink-200 sm:block" aria-hidden />
+          <Link href="/sitemap" className="inline-flex min-h-9 items-center gap-1 hover:text-ink-900">
+            <T ko="찾는 업무가 없나요?" en="Can't find your task?" />{" "}
+            <strong className="font-bold text-ink-800 underline-offset-2 hover:underline">
+              <T ko="전체 메뉴 보기" en="See all services" />
+            </strong>
+            <IconArrowRight className="size-3.5 text-ink-400" />
           </Link>
-        </div>
+        </p>
       </div>
     </>
   );

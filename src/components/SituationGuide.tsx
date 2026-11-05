@@ -128,26 +128,47 @@ export default function SituationGuide({ standalone = false }: { standalone?: bo
           aria-labelledby={`sit-tab-${g.key}`}
           className="p-5 lg:p-7"
         >
-          <p className="text-[0.9375rem] font-semibold text-ink-700">{pick(g.lead, lang)}</p>
+          <p className={`font-semibold text-ink-700 ${standalone ? "text-base lg:text-[1.0625rem]" : "text-[0.9375rem]"}`}>{pick(g.lead, lang)}</p>
 
-          <ol className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <ol className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 ${standalone ? "mt-6 gap-4 lg:gap-5" : "mt-5 gap-3"}`}>
             {g.steps.map((s, i) => (
               <li key={s.n} className="relative">
-                <Link
-                  href={s.href}
-                  className="group flex h-full items-start gap-3 rounded-xl border border-ink-200 bg-white p-4 transition hover:border-sk-red-300 hover:bg-sk-red-50/40"
-                >
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full sk-gradient text-sm font-extrabold text-white">
-                    {s.n}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[0.9375rem] font-extrabold text-ink-900">{pick(s.label, lang)}</span>
-                    <span className="mt-0.5 block text-[0.8125rem] leading-snug text-ink-500">{pick(s.desc, lang)}</span>
-                  </span>
-                </Link>
+                {standalone ? (
+                  <Link
+                    href={s.href}
+                    className="group flex h-full items-center gap-4 rounded-2xl border-2 border-ink-200 bg-white p-4 transition sm:flex-col sm:items-start sm:gap-0 sm:p-5 hover:-translate-y-0.5 hover:border-sk-red-400 hover:shadow-[0_12px_28px_-18px_rgba(234,0,44,.55)] lg:p-6"
+                  >
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-full sk-gradient text-lg font-extrabold text-white">
+                      <span className="sr-only">{t("단계", "Step")} </span>
+                      {s.n}
+                    </span>
+                    <span className="min-w-0 flex-1 sm:flex-none">
+                      <span className="block text-[1.0625rem] font-extrabold leading-snug text-ink-900 sm:mt-4 sm:text-lg lg:text-xl">{pick(s.label, lang)}</span>
+                      <span className="mt-0.5 block text-[0.875rem] leading-snug text-ink-600 sm:mt-1.5 sm:text-[0.9375rem]">{pick(s.desc, lang)}</span>
+                    </span>
+                    <IconArrowRight className="size-5 shrink-0 text-sk-red-500 sm:hidden" />
+                    <span className="mt-auto hidden items-center gap-1 pt-5 text-[0.875rem] font-bold text-sk-red-600 sm:inline-flex">
+                      {t("바로가기", "Go")}
+                      <IconArrowRight className="size-4 transition group-hover:translate-x-1" />
+                    </span>
+                  </Link>
+                ) : (
+                  <Link
+                    href={s.href}
+                    className="group flex h-full items-start gap-3 rounded-xl border border-ink-200 bg-white p-4 transition hover:border-sk-red-300 hover:bg-sk-red-50/40"
+                  >
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full sk-gradient text-sm font-extrabold text-white">
+                      {s.n}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[0.9375rem] font-extrabold text-ink-900">{pick(s.label, lang)}</span>
+                      <span className="mt-0.5 block text-[0.8125rem] leading-snug text-ink-500">{pick(s.desc, lang)}</span>
+                    </span>
+                  </Link>
+                )}
                 {i < g.steps.length - 1 ? (
                   <IconArrowRight
-                    className="absolute -right-2.5 top-1/2 hidden size-4 -translate-y-1/2 text-ink-300 lg:block"
+                    className={`absolute top-1/2 hidden size-4 -translate-y-1/2 text-ink-300 lg:block ${standalone ? "-right-[1.125rem]" : "-right-2.5"}`}
                   />
                 ) : null}
               </li>

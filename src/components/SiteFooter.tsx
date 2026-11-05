@@ -18,7 +18,7 @@ export default function SiteFooter() {
   const t = useT();
 
   return (
-    <footer className="mt-16 border-t border-ink-200 bg-white no-print">
+    <footer className="border-t border-ink-200 bg-white no-print">
       {/* Contact strip */}
       <div className="border-b border-ink-100 bg-ink-50">
         <div className="shell grid grid-cols-1 gap-3 py-8 sm:grid-cols-2">
