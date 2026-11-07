@@ -11,6 +11,7 @@ import {
 } from "react";
 import type { Bi } from "./i18n";
 import { DEMO_CUSTOMER_NO, digitsOnly, formatCustomerNo, lookupAccount, nextDueDate, type UsagePoint } from "./data";
+import type { Provider, SocialProfile } from "./social";
 
 /* ──────────────────────────────────────────────────────────────
    Member accounts (client-side).
@@ -31,6 +32,8 @@ export type Member = {
   createdAt: string;
   /** When the phone was confirmed by identity verification. */
   verifiedAt?: string;
+  /** Linked social accounts (provider → provider user ID). */
+  social?: Partial<Record<Provider, string>>;
 };
 
 export type User = {
@@ -50,6 +53,10 @@ export type User = {
   usage: UsagePoint[];
   /** Member since (ISO). */
   since: string;
+  /** Social providers linked to this member. */
+  social: Provider[];
+  /** Social-only members have no site password. */
+  hasPassword: boolean;
 };
 
 export const DEMO_ID = "demo";
@@ -68,6 +75,8 @@ const DEMO_MEMBER: Member = {
 const SESSION_KEY = "yes-auth";
 const MEMBERS_KEY = "yes-members";
 const FAIL_KEY = "yes-login-fail";
+/** The built-in demo member isn't in MEMBERS_KEY, so its social links live here. */
+const DEMO_SOCIAL_KEY = "yes-demo-social";
 
 export const MAX_PW_FAILS = 5;
 const LOCK_MS = 5 * 60 * 1000;
@@ -101,7 +110,7 @@ export async function sha256(text: string) {
     .join("");
 }
 
-function toUser(m: Member): User {
+function toUser(m: Member, demoSocial: Member["social"] = {}): User {
   const acct = lookupAccount(m.customerNo) ?? lookupAccount(DEMO_CUSTOMER_NO)!;
   const isDemo = m.id === DEMO_ID;
   return {
@@ -118,6 +127,8 @@ function toUser(m: Member): User {
     dueDate: nextDueDate(),
     usage: acct.usage,
     since: m.createdAt,
+    social: Object.keys((isDemo ? demoSocial : m.social) ?? {}) as Provider[],
+    hasPassword: isDemo || !!m.pwHash,
   };
 }
 
@@ -148,6 +159,13 @@ type Ctx = {
   telOwner: (tel: string) => string | null;
   /** IDs registered to this name + phone (find-ID). */
   findIds: (name: string, tel: string) => { id: string; createdAt: string }[];
+  /**
+   * Social sign-in. Matches by linked social ID, then by phone (auto-link).
+   * "new" means no member yet — continue to social sign-up.
+   */
+  socialLogin: (p: SocialProfile) => "ok" | "linked" | "new";
+  /** Create a member from a social profile (no site password). */
+  socialSignup: (p: SocialProfile, input: { name: string; tel: string; email: string; customerNo: string; verifiedAt: string }) => "ok" | "tel-taken" | "no-account";
   /** Set a new password after identity verification (not for the demo member). */
   resetPassword: (id: string, tel: string, newPassword: string) => Promise<"ok" | "mismatch" | "demo">;
   signup: (input: SignupInput) => Promise<"ok" | "taken" | "no-account">;
@@ -173,12 +191,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [members, setMembers] = useState<Member[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const [demoSocial, setDemoSocial] = useState<Member["social"]>({});
 
   // Restore after mount so the first client render matches the logged-out
   // server output; `ready` then lets the UI swap in the signed-in view.
   /* eslint-disable react-hooks/set-state-in-effect -- intentional post-mount sync */
   useEffect(() => {
     setMembers(readMembers());
+    try {
+      setDemoSocial(JSON.parse(localStorage.getItem(DEMO_SOCIAL_KEY) ?? "{}"));
+    } catch {}
     try {
       const s = localStorage.getItem(SESSION_KEY);
       // "1" is the session value written by the earlier demo-only login.
@@ -200,8 +222,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const user = useMemo(() => {
     if (!sessionId) return null;
     const m = findMember(sessionId);
-    return m ? toUser(m) : null;
-  }, [sessionId, findMember]);
+    return m ? toUser(m, demoSocial) : null;
+  }, [sessionId, findMember, demoSocial]);
 
   const startSession = (id: string) => {
     setSessionId(id);
@@ -217,7 +239,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const f = fails[key];
       if (f?.until && f.until > Date.now()) return { status: "locked", until: f.until };
       const m = findMember(id);
-      const ok = !!m && (m.id === DEMO_ID ? password === DEMO_PW : (await sha256(password)) === m.pwHash);
+      const ok = !!m && (m.id === DEMO_ID ? password === DEMO_PW : !!m.pwHash && (await sha256(password)) === m.pwHash);
       if (!ok || !m) {
         // Count unknown IDs too, so the response doesn't reveal which IDs exist.
         const count = (f?.until ? 0 : f?.count ?? 0) + 1;
@@ -250,6 +272,72 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return [DEMO_MEMBER, ...members]
         .filter((m) => telKey(m.tel) === k && (m.name === n || (m.id === DEMO_ID && n.toLowerCase() === "gildong kim")))
         .map((m) => ({ id: m.id, createdAt: m.createdAt }));
+    },
+    [members],
+  );
+
+  const socialLogin = useCallback(
+    (p: SocialProfile) => {
+      if (demoSocial?.[p.provider] === p.sub) {
+        startSession(DEMO_ID);
+        return "ok" as const;
+      }
+      const linked = members.find((m) => m.social?.[p.provider] === p.sub);
+      if (linked) {
+        startSession(linked.id);
+        return "ok" as const;
+      }
+      const k = telKey(p.tel);
+      if (telKey(DEMO_MEMBER.tel) === k) {
+        const next = { ...demoSocial, [p.provider]: p.sub };
+        try {
+          localStorage.setItem(DEMO_SOCIAL_KEY, JSON.stringify(next));
+        } catch {}
+        setDemoSocial(next);
+        startSession(DEMO_ID);
+        return "linked" as const;
+      }
+      const byTel = members.find((m) => telKey(m.tel) === k);
+      if (byTel) {
+        const next = readMembers().map((m) => (m.id === byTel.id ? { ...m, social: { ...m.social, [p.provider]: p.sub } } : m));
+        try {
+          localStorage.setItem(MEMBERS_KEY, JSON.stringify(next));
+        } catch {}
+        setMembers(next);
+        startSession(byTel.id);
+        return "linked" as const;
+      }
+      return "new" as const;
+    },
+    [members, demoSocial],
+  );
+
+  const socialSignup = useCallback(
+    (p: SocialProfile, input: { name: string; tel: string; email: string; customerNo: string; verifiedAt: string }) => {
+      const k = telKey(input.tel);
+      if (telKey(DEMO_MEMBER.tel) === k || members.some((m) => telKey(m.tel) === k)) return "tel-taken" as const;
+      if (!lookupAccount(input.customerNo)) return "no-account" as const;
+      const list = readMembers();
+      let id = `${p.provider}_${p.sub.replace(/[^a-z0-9]/gi, "").slice(-5).toLowerCase()}`;
+      while (id === DEMO_ID || list.some((m) => m.id === id)) id += "1";
+      const m: Member = {
+        id,
+        pwHash: "",
+        name: input.name.trim(),
+        tel: input.tel.trim(),
+        email: input.email.trim(),
+        customerNo: digitsOnly(input.customerNo),
+        createdAt: new Date().toISOString(),
+        verifiedAt: input.verifiedAt,
+        social: { [p.provider]: p.sub },
+      };
+      const next = [...list, m];
+      try {
+        localStorage.setItem(MEMBERS_KEY, JSON.stringify(next));
+      } catch {}
+      setMembers(next);
+      startSession(m.id);
+      return "ok" as const;
     },
     [members],
   );
@@ -332,7 +420,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, ready, checkCredentials, completeLogin, telOwner, findIds, resetPassword, signup, idTaken, updateProfile, deleteAccount, logout }}>
+    <AuthContext.Provider value={{ user, ready, checkCredentials, completeLogin, telOwner, findIds, resetPassword, socialLogin, socialSignup, signup, idTaken, updateProfile, deleteAccount, logout }}>
       {children}
     </AuthContext.Provider>
   );

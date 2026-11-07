@@ -4,6 +4,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import MobileTabBar from "@/components/MobileTabBar";
 import DocTitle from "@/components/DocTitle";
+import Flash from "@/components/Flash";
 import { LangProvider, langBootScript, T } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth";
 import { StoreProvider } from "@/lib/store";
@@ -52,6 +53,7 @@ export default function RootLayout({
             <SiteFooter />
             <MobileTabBar />
             <DocTitle />
+            <Flash />
             </StoreProvider>
           </AuthProvider>
         </LangProvider>

@@ -93,4 +93,9 @@ export function T({ ko, en }: { ko: ReactNode; en: ReactNode }) {
  * CSS-driven swaps (e.g. the per-language logo) don't flash on first load.
  * Dropped into <head> as a tiny inline script.
  */
-export const langBootScript = `(function(){try{var l=localStorage.getItem('${STORAGE_KEY}');if(l==='en'||l==='ko'){document.documentElement.lang=l;document.documentElement.setAttribute('data-lang',l);}else{document.documentElement.setAttribute('data-lang','ko');}}catch(e){document.documentElement.setAttribute('data-lang','ko');}})();`;
+// Every form here is handled in JavaScript. Before its part of the page has
+// hydrated, pressing Enter or a submit button would do a native GET — putting
+// passwords or account numbers in the URL. So the browser's own submit is
+// always cancelled (React's onSubmit handlers still run); only forms that
+// declare an explicit "action" (site search) submit natively.
+export const langBootScript = `document.addEventListener('submit',function(e){var f=e.target;if(f&&f.hasAttribute&&!f.hasAttribute('action'))e.preventDefault();},true);(function(){try{var l=localStorage.getItem('${STORAGE_KEY}');if(l==='en'||l==='ko'){document.documentElement.lang=l;document.documentElement.setAttribute('data-lang',l);}else{document.documentElement.setAttribute('data-lang','ko');}}catch(e){document.documentElement.setAttribute('data-lang','ko');}})();`;

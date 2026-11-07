@@ -723,7 +723,7 @@ function IdentityForm(p: IdentityProps) {
                   onClick={() => p.setOpenTerm(p.openTerm === x.id ? null : x.id)}
                   className="flex min-h-9 items-center gap-0.5 px-1 text-[0.75rem] font-bold text-ink-500"
                 >
-                  {t("보기", "View")} <IconChevron className={`size-3 transition ${p.openTerm === x.id ? "rotate-180" : ""}`} />
+                  {t("보기", "View")} <IconChevron className={`size-3 transition ${p.openTerm === x.id ? "-rotate-90" : "rotate-90"}`} />
                 </button>
               </div>
               {p.openTerm === x.id ? <p className="mb-2 rounded-lg bg-ink-50 p-2.5 text-[0.75rem] leading-relaxed text-ink-600">{pick(x.body, lang)}</p> : null}

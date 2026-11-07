@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CERT_KINDS, dateLabel, digitsOnly, institutionLabel, lookupAccount, paymentMethodLabel, periodLabel, SELF_CHECK, slotLabel, stamp, won } from "@/lib/data";
 import { pick, useLang, useT } from "@/lib/i18n";
 import { maskId, useAuth, type User } from "@/lib/auth";
@@ -26,6 +26,8 @@ import {
 } from "../form";
 import { IconArrowRight, IconCheck, IconShield, IconUser } from "../Icons";
 import PassVerify from "../PassVerify";
+import { KakaoMark, NaverMark, SocialButtons } from "../SocialLogin";
+import { clearPendingSocial, maskEmail, PROVIDERS, readPendingSocial, type SocialProfile } from "@/lib/social";
 
 /* ═══ 회원가입 ═══════════════════════════════════════════════════ */
 
@@ -46,13 +48,48 @@ export function Signup() {
   const params = useSearchParams();
   const rawNext = params.get("next");
   const next = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
-  const { signup, idTaken, telOwner, user, ready } = useAuth();
+  const { signup, idTaken, telOwner, socialLogin, socialSignup, user, ready } = useAuth();
+  const [social, setSocial] = useState<SocialProfile | null>(null);
+  const { lang } = useLang();
+  const socialParam = params.get("social");
   const [f, setF] = useState({ id: "", pw: "", pw2: "", name: "", tel: "", email: "", customerNo: "" });
   const [verified, setVerified] = useState<Verified | null>(null);
   const [verifyOpen, setVerifyOpen] = useState(false);
   const [terms, setTerms] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [marketing, setMarketing] = useState(false);
+
+  // First-time Kakao/Naver visitor handed over from the login page.
+  /* eslint-disable react-hooks/set-state-in-effect -- read sessionStorage after mount */
+  useEffect(() => {
+    if (!socialParam) return;
+    const p = readPendingSocial();
+    if (p) {
+      setSocial(p);
+      if (p.email) setF((x) => ({ ...x, email: p.email! }));
+    }
+  }, [socialParam]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  function onSocial(p: SocialProfile) {
+    const res = socialLogin(p);
+    if (res !== "new") {
+      router.push(next === "/" ? "/mypage" : next);
+      return;
+    }
+    setSocial(p);
+    setVerified(null);
+    setErrors({});
+    if (p.email) setF((x) => ({ ...x, email: p.email! }));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function leaveSocial() {
+    clearPendingSocial();
+    setSocial(null);
+    setVerified(null);
+    setErrors({});
+  }
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF((s) => ({ ...s, [k]: e.target.value }));
@@ -73,11 +110,13 @@ export function Signup() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const er: Record<string, string> = {};
-    if (!ID_RE.test(f.id)) er["su-id"] = t("영문 소문자로 시작하는 4~16자 (영문 소문자·숫자)로 입력해 주세요.", "4–16 lowercase letters or digits, starting with a letter.");
-    else if (idTaken(f.id)) er["su-id"] = t("이미 사용 중인 아이디입니다.", "That ID is taken.");
-    if (f.pw.length < 8 || !/[a-zA-Z]/.test(f.pw) || !/\d/.test(f.pw)) er["su-pw"] = t("비밀번호는 영문과 숫자를 섞어 8자 이상이어야 합니다.", "Use at least 8 characters with letters and numbers.");
-    else if (f.pw.toLowerCase().includes(f.id.toLowerCase()) && f.id) er["su-pw"] = t("비밀번호에 아이디를 넣을 수 없습니다.", "The password can't contain your ID.");
-    if (f.pw2 !== f.pw || !f.pw2) er["su-pw2"] = t("비밀번호가 일치하지 않습니다.", "Passwords don't match.");
+    if (!social) {
+      if (!ID_RE.test(f.id)) er["su-id"] = t("영문 소문자로 시작하는 4~16자 (영문 소문자·숫자)로 입력해 주세요.", "4–16 lowercase letters or digits, starting with a letter.");
+      else if (idTaken(f.id)) er["su-id"] = t("이미 사용 중인 아이디입니다.", "That ID is taken.");
+      if (f.pw.length < 8 || !/[a-zA-Z]/.test(f.pw) || !/\d/.test(f.pw)) er["su-pw"] = t("비밀번호는 영문과 숫자를 섞어 8자 이상이어야 합니다.", "Use at least 8 characters with letters and numbers.");
+      else if (f.pw.toLowerCase().includes(f.id.toLowerCase()) && f.id) er["su-pw"] = t("비밀번호에 아이디를 넣을 수 없습니다.", "The password can't contain your ID.");
+      if (f.pw2 !== f.pw || !f.pw2) er["su-pw2"] = t("비밀번호가 일치하지 않습니다.", "Passwords don't match.");
+    }
     if (!verified) er["su-verify"] = t("휴대폰 본인인증을 완료해 주세요.", "Please verify your phone first.");
     if (!isEmail(f.email)) er["su-email"] = t("이메일 형식을 확인해 주세요.", "Check the email format.");
     if (!isCustomerNo(f.customerNo)) er["su-cust"] = t("고객번호 10자리를 입력해 주세요.", "Enter your 10-digit customer number.");
@@ -86,6 +125,15 @@ export function Signup() {
     setErrors(er);
     if (Object.keys(er).length) return focusFirstError(er);
     setBusy(true);
+    if (social) {
+      const sr = socialSignup(social, { name: verified!.name, tel: verified!.tel, email: f.email, customerNo: f.customerNo, verifiedAt: verified!.at });
+      setBusy(false);
+      if (sr === "tel-taken") return setErrors({ "su-verify": t("이미 가입된 휴대폰 번호입니다. 로그인 후 연결해 주세요.", "This phone already has an account. Sign in to link it.") });
+      if (sr === "no-account") return setErrors({ "su-cust": t("등록되지 않은 고객번호입니다.", "That customer number isn't registered.") });
+      clearPendingSocial();
+      router.push(next === "/" ? "/mypage?welcome=1" : next);
+      return;
+    }
     const res = await signup({ id: f.id, password: f.pw, name: verified!.name, tel: verified!.tel, email: f.email, customerNo: f.customerNo, verifiedAt: verified!.at });
     setBusy(false);
     if (res === "taken") return setErrors({ "su-id": t("이미 사용 중인 아이디입니다.", "That ID is taken.") });
@@ -95,33 +143,60 @@ export function Signup() {
 
   return (
     <form onSubmit={submit} noValidate className="space-y-4">
-      <Card>
-        <SectionTitle>{t("계정 정보", "Account")}</SectionTitle>
-        <div className="space-y-5">
-          <Field id="su-id" label={t("아이디", "ID")} required error={errors["su-id"]} help={t("영문 소문자로 시작, 4~16자", "Starts with a letter, 4–16 characters")}>
-            <input id="su-id" value={f.id} onChange={(e) => setF((s) => ({ ...s, id: e.target.value.toLowerCase() }))} autoComplete="username" className={inputCls(!!errors["su-id"])} />
-            {idState && !errors["su-id"] ? (
-              <p data-id-state={idState} className={`mt-1.5 text-[0.8125rem] font-bold ${idState === "ok" ? "text-emerald-600" : "text-sk-orange-600"}`}>
-                {idState === "ok" ? t("사용할 수 있는 아이디입니다.", "This ID is available.") : idState === "taken" ? t("이미 사용 중인 아이디입니다.", "That ID is taken.") : t("형식에 맞지 않습니다.", "Doesn't match the format.")}
-              </p>
-            ) : null}
-          </Field>
-          <Field id="su-pw" label={t("비밀번호", "Password")} required error={errors["su-pw"]} help={t("영문·숫자 포함 8자 이상", "8+ characters with letters and numbers")}>
-            <input id="su-pw" type="password" value={f.pw} onChange={set("pw")} autoComplete="new-password" className={inputCls(!!errors["su-pw"])} />
-            {f.pw ? (
-              <div className="mt-2 flex items-center gap-2" aria-live="polite">
-                <div className="flex flex-1 gap-1" aria-hidden>
-                  {[0, 1, 2, 3].map((i) => <span key={i} className={`h-1.5 flex-1 rounded-full ${i < score ? (score >= 3 ? "bg-emerald-500" : "bg-sk-orange-400") : "bg-ink-200"}`} />)}
-                </div>
-                <span className="text-[0.75rem] font-bold text-ink-500">{score >= 3 ? t("강함", "Strong") : score === 2 ? t("보통", "Fair") : t("약함", "Weak")}</span>
-              </div>
-            ) : null}
-          </Field>
-          <Field id="su-pw2" label={t("비밀번호 확인", "Confirm password")} required error={errors["su-pw2"]}>
-            <input id="su-pw2" type="password" value={f.pw2} onChange={set("pw2")} autoComplete="new-password" className={inputCls(!!errors["su-pw2"])} />
-          </Field>
+      {social ? (
+        <div className="flex flex-wrap items-center gap-3 rounded-[1.25rem] border-2 p-4" style={{ borderColor: PROVIDERS[social.provider].bg }} data-social-signup={social.provider}>
+          <span className="flex size-11 items-center justify-center rounded-xl" style={{ backgroundColor: PROVIDERS[social.provider].bg, color: PROVIDERS[social.provider].fg }}>
+            {social.provider === "kakao" ? <KakaoMark className="size-6" /> : <NaverMark className="size-6" />}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[0.9375rem] font-extrabold text-ink-900">
+              {t(`${pick(PROVIDERS[social.provider].name, lang)} 계정으로 가입합니다`, `Signing up with ${pick(PROVIDERS[social.provider].name, lang)}`)}
+            </p>
+            <p className="truncate text-[0.8125rem] text-ink-500">
+              {social.name}{social.email ? ` · ${maskEmail(social.email)}` : ""} · {t("아이디·비밀번호 없이 로그인", "no ID or password needed")}
+            </p>
+          </div>
+          <button type="button" onClick={leaveSocial} className="min-h-10 rounded-lg border border-ink-200 px-3 text-[0.8125rem] font-bold text-ink-600 hover:bg-ink-50">
+            {t("일반 가입으로", "Regular sign-up")}
+          </button>
         </div>
-      </Card>
+      ) : (
+        <>
+          <Card>
+            <SectionTitle sub={t("이미 쓰는 계정으로 아이디·비밀번호 없이 가입하세요.", "Use an account you already have — no new ID or password.")}>{t("간편 가입", "Quick sign-up")}</SectionTitle>
+            <SocialButtons variant="signup" onProfile={onSocial} />
+            <p className="mt-2 text-center text-[0.6875rem] text-ink-400">{t("데모 기능 · 실제 카카오·네이버와 연결되지 않습니다.", "Demo — not connected to Kakao or Naver.")}</p>
+          </Card>
+          <p className="relative py-1 text-center text-[0.75rem] font-bold text-ink-400">{t("또는 아이디로 가입", "Or sign up with an ID")}</p>
+          <Card>
+            <SectionTitle>{t("계정 정보", "Account")}</SectionTitle>
+            <div className="space-y-5">
+              <Field id="su-id" label={t("아이디", "ID")} required error={errors["su-id"]} help={t("영문 소문자로 시작, 4~16자", "Starts with a letter, 4–16 characters")}>
+                <input id="su-id" value={f.id} onChange={(e) => setF((s) => ({ ...s, id: e.target.value.toLowerCase() }))} autoComplete="username" className={inputCls(!!errors["su-id"])} />
+                {idState && !errors["su-id"] ? (
+                  <p data-id-state={idState} className={`mt-1.5 text-[0.8125rem] font-bold ${idState === "ok" ? "text-emerald-600" : "text-sk-orange-600"}`}>
+                    {idState === "ok" ? t("사용할 수 있는 아이디입니다.", "This ID is available.") : idState === "taken" ? t("이미 사용 중인 아이디입니다.", "That ID is taken.") : t("형식에 맞지 않습니다.", "Doesn't match the format.")}
+                  </p>
+                ) : null}
+              </Field>
+              <Field id="su-pw" label={t("비밀번호", "Password")} required error={errors["su-pw"]} help={t("영문·숫자 포함 8자 이상", "8+ characters with letters and numbers")}>
+                <input id="su-pw" type="password" value={f.pw} onChange={set("pw")} autoComplete="new-password" className={inputCls(!!errors["su-pw"])} />
+                {f.pw ? (
+                  <div className="mt-2 flex items-center gap-2" aria-live="polite">
+                    <div className="flex flex-1 gap-1" aria-hidden>
+                      {[0, 1, 2, 3].map((i) => <span key={i} className={`h-1.5 flex-1 rounded-full ${i < score ? (score >= 3 ? "bg-emerald-500" : "bg-sk-orange-400") : "bg-ink-200"}`} />)}
+                    </div>
+                    <span className="text-[0.75rem] font-bold text-ink-500">{score >= 3 ? t("강함", "Strong") : score === 2 ? t("보통", "Fair") : t("약함", "Weak")}</span>
+                  </div>
+                ) : null}
+              </Field>
+              <Field id="su-pw2" label={t("비밀번호 확인", "Confirm password")} required error={errors["su-pw2"]}>
+                <input id="su-pw2" type="password" value={f.pw2} onChange={set("pw2")} autoComplete="new-password" className={inputCls(!!errors["su-pw2"])} />
+              </Field>
+            </div>
+          </Card>
+        </>
+      )}
       <Card>
         <SectionTitle>{t("회원 정보", "About you")}</SectionTitle>
         <div className="space-y-5">
@@ -181,6 +256,8 @@ export function Signup() {
         mode="identity"
         purpose={{ ko: "회원가입 본인확인", en: "Sign-up identity check" }}
         minAge={14}
+        name={social?.name}
+        tel={social?.tel}
         onClose={() => setVerifyOpen(false)}
         onVerified={(v) => {
           setVerifyOpen(false);
@@ -267,6 +344,16 @@ function MyPageInner({ user }: { user: User }) {
             <div>
               <p data-mypage-name className="text-lg font-extrabold text-ink-900">{t(`${pick(user.name, lang)}님`, pick(user.name, lang))}</p>
               <p className="text-[0.8125rem] text-ink-500">ID {user.memberId} · {t(`${dateLabel(user.since, lang)} 가입`, `member since ${dateLabel(user.since, lang)}`)}</p>
+              {user.social.length ? (
+                <p className="mt-1 flex flex-wrap gap-1.5" data-linked-social>
+                  {user.social.map((p) => (
+                    <span key={p} className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.6875rem] font-bold" style={{ backgroundColor: PROVIDERS[p].bg, color: PROVIDERS[p].fg }}>
+                      {p === "kakao" ? <KakaoMark className="size-3" /> : <NaverMark className="size-3" />}
+                      {t(`${pick(PROVIDERS[p].name, "ko")} 연결됨`, `${pick(PROVIDERS[p].name, "en")} linked`)}
+                    </span>
+                  ))}
+                </p>
+              ) : null}
             </div>
           </div>
           <div className="flex gap-2">

@@ -4,10 +4,12 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { DEMO_ID, DEMO_PW, MAX_PW_FAILS, useAuth } from "@/lib/auth";
-import { useT } from "@/lib/i18n";
+import { pick, useT } from "@/lib/i18n";
 import { inputCls, PrimaryButton } from "./form";
 import { IconArrowRight, IconLock, IconShield, IconUser } from "./Icons";
 import PassVerify from "./PassVerify";
+import { SocialButtons } from "./SocialLogin";
+import { PROVIDERS, savePendingSocial, type SocialProfile } from "@/lib/social";
 
 /** Only allow same-site relative redirects. */
 function safeNext(raw: string | null) {
@@ -17,7 +19,7 @@ function safeNext(raw: string | null) {
 export default function LoginForm() {
   const router = useRouter();
   const next = safeNext(useSearchParams().get("next"));
-  const { checkCredentials, completeLogin } = useAuth();
+  const { checkCredentials, completeLogin, socialLogin } = useAuth();
   const t = useT();
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
@@ -60,6 +62,21 @@ export default function LoginForm() {
     setPending({ memberId: res.memberId, tel: res.tel, name: res.name });
   }
 
+  function onSocial(p: SocialProfile) {
+    const res = socialLogin(p);
+    if (res === "new") {
+      savePendingSocial(p);
+      router.push(`/signup?social=${p.provider}${next !== "/" ? `&next=${encodeURIComponent(next)}` : ""}`);
+      return;
+    }
+    if (res === "linked") {
+      try {
+        sessionStorage.setItem("yes-flash", t(`${pick(PROVIDERS[p.provider].name, "ko")} 계정을 회원 정보와 연결했습니다.`, `Your ${pick(PROVIDERS[p.provider].name, "en")} account is now linked.`));
+      } catch {}
+    }
+    router.push(next);
+  }
+
   function fillDemo() {
     setId(DEMO_ID);
     setPw(DEMO_PW);
@@ -98,6 +115,22 @@ export default function LoginForm() {
               <IconUser className="size-4" /> {busy ? t("확인 중…", "Checking…") : t("로그인", "Log in")}
             </PrimaryButton>
           </form>
+          <p className="mt-3 flex items-center justify-center gap-1.5 text-[0.75rem] text-ink-500">
+            <IconShield className="size-3.5" />
+            {t("아이디로 로그인하면 등록된 휴대폰 인증번호를 한 번 더 확인합니다.", "ID sign-in also checks a code sent to your registered phone.")}
+          </p>
+
+          <div className="mt-6">
+            <p className="relative text-center text-[0.75rem] font-bold text-ink-400 before:absolute before:left-0 before:top-1/2 before:h-px before:w-[calc(50%-3.5rem)] before:bg-ink-200 after:absolute after:right-0 after:top-1/2 after:h-px after:w-[calc(50%-3.5rem)] after:bg-ink-200">
+              {t("간편 로그인", "Quick sign-in")}
+            </p>
+            <div className="mt-3">
+              <SocialButtons onProfile={onSocial} />
+            </div>
+            <p className="mt-2 text-center text-[0.6875rem] text-ink-400">
+              {t("데모 기능 · 실제 카카오·네이버와 연결되지 않습니다.", "Demo — not connected to Kakao or Naver.")}
+            </p>
+          </div>
 
           <div className="mt-4 rounded-xl border border-sk-orange-200 bg-sk-orange-50 p-3.5 text-[0.8125rem] text-sk-orange-800">
             <p>
@@ -107,11 +140,6 @@ export default function LoginForm() {
               {t("체험용 계정으로 채우기", "Fill in the demo account")}
             </button>
           </div>
-
-          <p className="mt-4 flex items-center justify-center gap-1.5 text-[0.75rem] text-ink-500">
-            <IconShield className="size-3.5" />
-            {t("로그인할 때 등록된 휴대폰으로 인증번호를 한 번 더 확인합니다.", "Signing in also checks a code sent to your registered phone.")}
-          </p>
 
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 border-t border-ink-100 pt-5 text-[0.8125rem]">
             <Link href="/find-account" className="font-bold text-ink-700 hover:text-sk-red-600 hover:underline">
