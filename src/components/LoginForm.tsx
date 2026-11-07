@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { DEMO_ID, DEMO_PW, useAuth } from "@/lib/auth";
+import { DEMO_ID, DEMO_PW, MAX_PW_FAILS, useAuth } from "@/lib/auth";
 import { useT } from "@/lib/i18n";
 import { inputCls, PrimaryButton } from "./form";
-import { IconArrowRight, IconLock, IconUser } from "./Icons";
+import { IconArrowRight, IconLock, IconShield, IconUser } from "./Icons";
+import PassVerify from "./PassVerify";
 
 /** Only allow same-site relative redirects. */
 function safeNext(raw: string | null) {
@@ -16,12 +17,14 @@ function safeNext(raw: string | null) {
 export default function LoginForm() {
   const router = useRouter();
   const next = safeNext(useSearchParams().get("next"));
-  const { login } = useAuth();
+  const { checkCredentials, completeLogin } = useAuth();
   const t = useT();
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  // Step 2: code to the member's registered phone.
+  const [pending, setPending] = useState<{ memberId: string; tel: string; name: string } | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,14 +33,31 @@ export default function LoginForm() {
       return;
     }
     setBusy(true);
-    const res = await login(id, pw);
+    const res = await checkCredentials(id, pw);
     setBusy(false);
-    if (res === "invalid") {
-      setError(t("아이디 또는 비밀번호가 올바르지 않습니다.", "The ID or password is incorrect."));
+    if (res.status === "locked") {
+      const min = Math.max(1, Math.ceil((res.until - Date.now()) / 60000));
+      setError(
+        t(
+          `비밀번호를 ${MAX_PW_FAILS}회 잘못 입력해 로그인이 ${min}분간 제한됩니다. 비밀번호를 잊으셨다면 재설정해 주세요.`,
+          `Too many wrong passwords — sign-in is paused for ${min} min. Forgot it? Reset your password.`,
+        ),
+      );
       setPw("");
       return;
     }
-    router.push(next);
+    if (res.status === "invalid") {
+      setError(
+        t(
+          `아이디 또는 비밀번호가 올바르지 않습니다. (${res.failures}/${MAX_PW_FAILS}회 · ${MAX_PW_FAILS}회 틀리면 5분간 제한)`,
+          `The ID or password is incorrect. (${res.failures}/${MAX_PW_FAILS} · 5-minute pause after ${MAX_PW_FAILS})`,
+        ),
+      );
+      setPw("");
+      return;
+    }
+    setError("");
+    setPending({ memberId: res.memberId, tel: res.tel, name: res.name });
   }
 
   function fillDemo() {
@@ -88,7 +108,16 @@ export default function LoginForm() {
             </button>
           </div>
 
-          <div className="mt-5 flex items-center justify-center gap-3 border-t border-ink-100 pt-5 text-[0.8125rem]">
+          <p className="mt-4 flex items-center justify-center gap-1.5 text-[0.75rem] text-ink-500">
+            <IconShield className="size-3.5" />
+            {t("로그인할 때 등록된 휴대폰으로 인증번호를 한 번 더 확인합니다.", "Signing in also checks a code sent to your registered phone.")}
+          </p>
+
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 border-t border-ink-100 pt-5 text-[0.8125rem]">
+            <Link href="/find-account" className="font-bold text-ink-700 hover:text-sk-red-600 hover:underline">
+              {t("아이디·비밀번호 찾기", "Find ID / password")}
+            </Link>
+            <span className="h-3 w-px bg-ink-200" aria-hidden />
             <Link href={`/signup${next !== "/" ? `?next=${encodeURIComponent(next)}` : ""}`} className="font-bold text-ink-700 hover:text-sk-red-600 hover:underline">
               {t("회원가입", "Sign up")}
             </Link>
@@ -99,6 +128,21 @@ export default function LoginForm() {
           </div>
         </div>
       </div>
+
+      <PassVerify
+        open={!!pending}
+        mode="otp"
+        purpose={{ ko: "로그인 2단계 인증", en: "Sign-in verification" }}
+        tel={pending?.tel}
+        name={pending?.name}
+        onClose={() => setPending(null)}
+        onVerified={() => {
+          if (!pending) return;
+          completeLogin(pending.memberId);
+          setPending(null);
+          router.push(next);
+        }}
+      />
     </div>
   );
 }

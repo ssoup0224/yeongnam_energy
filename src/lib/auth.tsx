@@ -29,6 +29,8 @@ export type Member = {
   email: string;
   customerNo: string;
   createdAt: string;
+  /** When the phone was confirmed by identity verification. */
+  verifiedAt?: string;
 };
 
 export type User = {
@@ -65,6 +67,32 @@ const DEMO_MEMBER: Member = {
 
 const SESSION_KEY = "yes-auth";
 const MEMBERS_KEY = "yes-members";
+const FAIL_KEY = "yes-login-fail";
+
+export const MAX_PW_FAILS = 5;
+const LOCK_MS = 5 * 60 * 1000;
+
+type Fails = Record<string, { count: number; until?: number }>;
+function readFails(): Fails {
+  try {
+    return JSON.parse(localStorage.getItem(FAIL_KEY) ?? "{}") as Fails;
+  } catch {
+    return {};
+  }
+}
+function writeFails(f: Fails) {
+  try {
+    localStorage.setItem(FAIL_KEY, JSON.stringify(f));
+  } catch {}
+}
+
+/** qatester1 → qa*****1 */
+export function maskId(id: string) {
+  if (id.length <= 3) return `${id[0]}**`;
+  return `${id.slice(0, 2)}${"*".repeat(id.length - 3)}${id.slice(-1)}`;
+}
+
+const telKey = (tel: string) => tel.replace(/\D/g, "");
 
 export async function sha256(text: string) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
@@ -100,13 +128,28 @@ export type SignupInput = {
   tel: string;
   email: string;
   customerNo: string;
+  verifiedAt?: string;
 };
+
+export type CredentialResult =
+  | { status: "ok"; memberId: string; tel: string; name: string }
+  | { status: "invalid"; failures: number }
+  | { status: "locked"; until: number };
 
 type Ctx = {
   user: User | null;
   /** False until the saved session has been read (avoids a logged-out flash). */
   ready: boolean;
-  login: (id: string, password: string) => Promise<"ok" | "invalid">;
+  /** Step 1 of login: check ID + password (with lockout). No session yet. */
+  checkCredentials: (id: string, password: string) => Promise<CredentialResult>;
+  /** Step 2 of login: start the session after the phone code is verified. */
+  completeLogin: (memberId: string) => void;
+  /** Member ID already using this phone number, if any. */
+  telOwner: (tel: string) => string | null;
+  /** IDs registered to this name + phone (find-ID). */
+  findIds: (name: string, tel: string) => { id: string; createdAt: string }[];
+  /** Set a new password after identity verification (not for the demo member). */
+  resetPassword: (id: string, tel: string, newPassword: string) => Promise<"ok" | "mismatch" | "demo">;
   signup: (input: SignupInput) => Promise<"ok" | "taken" | "no-account">;
   idTaken: (id: string) => boolean;
   /** Edit name / phone / email. The built-in demo member can't be changed. */
@@ -167,17 +210,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {}
   };
 
-  const login = useCallback(
-    async (id: string, password: string) => {
+  const checkCredentials = useCallback(
+    async (id: string, password: string): Promise<CredentialResult> => {
+      const key = id.trim().toLowerCase();
+      const fails = readFails();
+      const f = fails[key];
+      if (f?.until && f.until > Date.now()) return { status: "locked", until: f.until };
       const m = findMember(id);
-      if (!m) return "invalid" as const;
-      const ok = m.id === DEMO_ID ? password === DEMO_PW : (await sha256(password)) === m.pwHash;
-      if (!ok) return "invalid" as const;
-      startSession(m.id);
-      return "ok" as const;
+      const ok = !!m && (m.id === DEMO_ID ? password === DEMO_PW : (await sha256(password)) === m.pwHash);
+      if (!ok || !m) {
+        // Count unknown IDs too, so the response doesn't reveal which IDs exist.
+        const count = (f?.until ? 0 : f?.count ?? 0) + 1;
+        fails[key] = count >= MAX_PW_FAILS ? { count, until: Date.now() + LOCK_MS } : { count };
+        writeFails(fails);
+        return count >= MAX_PW_FAILS ? { status: "locked", until: fails[key].until! } : { status: "invalid", failures: count };
+      }
+      delete fails[key];
+      writeFails(fails);
+      return { status: "ok", memberId: m.id, tel: m.tel, name: m.name };
     },
     [findMember],
   );
+
+  const completeLogin = useCallback((memberId: string) => startSession(memberId), []);
+
+  const telOwner = useCallback(
+    (tel: string) => {
+      const k = telKey(tel);
+      if (telKey(DEMO_MEMBER.tel) === k) return DEMO_ID;
+      return members.find((m) => telKey(m.tel) === k)?.id ?? null;
+    },
+    [members],
+  );
+
+  const findIds = useCallback(
+    (name: string, tel: string) => {
+      const k = telKey(tel);
+      const n = name.trim();
+      return [DEMO_MEMBER, ...members]
+        .filter((m) => telKey(m.tel) === k && (m.name === n || (m.id === DEMO_ID && n.toLowerCase() === "gildong kim")))
+        .map((m) => ({ id: m.id, createdAt: m.createdAt }));
+    },
+    [members],
+  );
+
+  const resetPassword = useCallback(async (id: string, tel: string, newPassword: string) => {
+    const key = id.trim().toLowerCase();
+    if (key === DEMO_ID) return "demo" as const;
+    const list = readMembers();
+    const m = list.find((x) => x.id.toLowerCase() === key);
+    if (!m || telKey(m.tel) !== telKey(tel)) return "mismatch" as const;
+    const pwHash = await sha256(newPassword);
+    const next = list.map((x) => (x.id === m.id ? { ...x, pwHash } : x));
+    try {
+      localStorage.setItem(MEMBERS_KEY, JSON.stringify(next));
+    } catch {}
+    setMembers(next);
+    const fails = readFails();
+    delete fails[key];
+    writeFails(fails);
+    return "ok" as const;
+  }, []);
 
   const idTaken = useCallback((id: string) => !!findMember(id), [findMember]);
 
@@ -193,6 +286,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: input.email.trim(),
         customerNo: digitsOnly(input.customerNo),
         createdAt: new Date().toISOString(),
+        verifiedAt: input.verifiedAt,
       };
       const next = [...readMembers(), m];
       try {
@@ -238,7 +332,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, ready, login, signup, idTaken, updateProfile, deleteAccount, logout }}>
+    <AuthContext.Provider value={{ user, ready, checkCredentials, completeLogin, telOwner, findIds, resetPassword, signup, idTaken, updateProfile, deleteAccount, logout }}>
       {children}
     </AuthContext.Provider>
   );

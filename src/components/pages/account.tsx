@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { CERT_KINDS, dateLabel, digitsOnly, institutionLabel, lookupAccount, paymentMethodLabel, periodLabel, SELF_CHECK, slotLabel, stamp, won } from "@/lib/data";
 import { pick, useLang, useT } from "@/lib/i18n";
-import { useAuth, type User } from "@/lib/auth";
+import { maskId, useAuth, type User } from "@/lib/auth";
+import type { Verified } from "@/lib/verify";
 import { REQUEST_META, requestStatus, useStore } from "@/lib/store";
 import BillStatement from "../BillStatement";
 import RequireLogin from "../RequireLogin";
@@ -23,7 +24,8 @@ import {
   PrimaryButton,
   SectionTitle,
 } from "../form";
-import { IconArrowRight, IconCheck, IconUser } from "../Icons";
+import { IconArrowRight, IconCheck, IconShield, IconUser } from "../Icons";
+import PassVerify from "../PassVerify";
 
 /* ═══ 회원가입 ═══════════════════════════════════════════════════ */
 
@@ -44,8 +46,10 @@ export function Signup() {
   const params = useSearchParams();
   const rawNext = params.get("next");
   const next = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
-  const { signup, idTaken, user, ready } = useAuth();
+  const { signup, idTaken, telOwner, user, ready } = useAuth();
   const [f, setF] = useState({ id: "", pw: "", pw2: "", name: "", tel: "", email: "", customerNo: "" });
+  const [verified, setVerified] = useState<Verified | null>(null);
+  const [verifyOpen, setVerifyOpen] = useState(false);
   const [terms, setTerms] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [marketing, setMarketing] = useState(false);
@@ -74,8 +78,7 @@ export function Signup() {
     if (f.pw.length < 8 || !/[a-zA-Z]/.test(f.pw) || !/\d/.test(f.pw)) er["su-pw"] = t("비밀번호는 영문과 숫자를 섞어 8자 이상이어야 합니다.", "Use at least 8 characters with letters and numbers.");
     else if (f.pw.toLowerCase().includes(f.id.toLowerCase()) && f.id) er["su-pw"] = t("비밀번호에 아이디를 넣을 수 없습니다.", "The password can't contain your ID.");
     if (f.pw2 !== f.pw || !f.pw2) er["su-pw2"] = t("비밀번호가 일치하지 않습니다.", "Passwords don't match.");
-    if (f.name.trim().length < 2) er["su-name"] = t("이름을 입력해 주세요.", "Enter your name.");
-    if (!isTel(f.tel)) er["su-tel"] = t("휴대폰 번호를 010-0000-0000 형식으로 입력해 주세요.", "Enter a mobile number like 010-0000-0000.");
+    if (!verified) er["su-verify"] = t("휴대폰 본인인증을 완료해 주세요.", "Please verify your phone first.");
     if (!isEmail(f.email)) er["su-email"] = t("이메일 형식을 확인해 주세요.", "Check the email format.");
     if (!isCustomerNo(f.customerNo)) er["su-cust"] = t("고객번호 10자리를 입력해 주세요.", "Enter your 10-digit customer number.");
     else if (!lookupAccount(f.customerNo)) er["su-cust"] = t("등록되지 않은 고객번호입니다.", "That customer number isn't registered.");
@@ -83,7 +86,7 @@ export function Signup() {
     setErrors(er);
     if (Object.keys(er).length) return focusFirstError(er);
     setBusy(true);
-    const res = await signup({ id: f.id, password: f.pw, name: f.name, tel: f.tel, email: f.email, customerNo: f.customerNo });
+    const res = await signup({ id: f.id, password: f.pw, name: verified!.name, tel: verified!.tel, email: f.email, customerNo: f.customerNo, verifiedAt: verified!.at });
     setBusy(false);
     if (res === "taken") return setErrors({ "su-id": t("이미 사용 중인 아이디입니다.", "That ID is taken.") });
     if (res === "no-account") return setErrors({ "su-cust": t("등록되지 않은 고객번호입니다.", "That customer number isn't registered.") });
@@ -122,17 +125,36 @@ export function Signup() {
       <Card>
         <SectionTitle>{t("회원 정보", "About you")}</SectionTitle>
         <div className="space-y-5">
-          <Field id="su-name" label={t("이름", "Name")} required error={errors["su-name"]}>
-            <input id="su-name" value={f.name} onChange={set("name")} autoComplete="name" className={inputCls(!!errors["su-name"])} />
-          </Field>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <Field id="su-tel" label={t("휴대폰", "Mobile")} required error={errors["su-tel"]}>
-              <input id="su-tel" value={f.tel} onChange={set("tel")} inputMode="tel" autoComplete="tel" className={inputCls(!!errors["su-tel"])} placeholder="010-1234-5678" />
-            </Field>
-            <Field id="su-email" label={t("이메일", "Email")} required error={errors["su-email"]}>
-              <input id="su-email" type="email" value={f.email} onChange={set("email")} autoComplete="email" className={inputCls(!!errors["su-email"])} />
-            </Field>
+          <div data-field="su-verify">
+            <p className="text-[0.875rem] font-bold text-ink-800">
+              {t("본인인증", "Identity check")} <span className="text-sk-red-600">{t("(필수)", "(required)")}</span>
+            </p>
+            {verified ? (
+              <div className="mt-2 flex flex-wrap items-center gap-3 rounded-xl border-2 border-emerald-200 bg-emerald-50 px-4 py-3.5">
+                <span className="flex size-9 items-center justify-center rounded-full bg-emerald-500 text-white"><IconCheck className="size-5" /></span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[0.9375rem] font-extrabold text-ink-900" data-verified-name>{verified.name}</p>
+                  <p className="text-[0.8125rem] tabular-nums text-emerald-800">{verified.tel} · {t("휴대폰 본인인증 완료", "Phone verified")}</p>
+                </div>
+                <button type="button" onClick={() => setVerifyOpen(true)} className="min-h-10 rounded-lg border border-emerald-300 bg-white px-3 text-[0.8125rem] font-bold text-emerald-800">
+                  {t("다시 인증", "Redo")}
+                </button>
+              </div>
+            ) : (
+              <div className={`mt-2 rounded-xl border-2 p-4 ${errors["su-verify"] ? "border-sk-red-300 bg-sk-red-50/40" : "border-ink-200"}`}>
+                <p className="text-[0.8125rem] leading-relaxed text-ink-600">
+                  {t("이름과 휴대폰 번호는 본인인증으로 확인합니다. 한 휴대폰 번호로는 한 계정만 만들 수 있습니다.", "Your name and phone are confirmed by identity check. One account per phone number.")}
+                </p>
+                <button type="button" id="su-verify" onClick={() => setVerifyOpen(true)} className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-ink-900 px-5 font-extrabold text-white hover:bg-ink-800">
+                  <IconShield className="size-[1.125rem]" /> {t("휴대폰 본인인증", "Verify with your phone")}
+                </button>
+              </div>
+            )}
+            {errors["su-verify"] ? <ErrorText>{errors["su-verify"]}</ErrorText> : null}
           </div>
+          <Field id="su-email" label={t("이메일", "Email")} required error={errors["su-email"]}>
+            <input id="su-email" type="email" value={f.email} onChange={set("email")} autoComplete="email" className={inputCls(!!errors["su-email"])} />
+          </Field>
           <Field id="su-cust" label={t("고객번호 연결", "Link customer number")} required error={errors["su-cust"]} help={t("청구서 오른쪽 위 10자리. 연결하면 로그인만으로 요금·사용량을 볼 수 있습니다.", "The 10 digits on your bill. Linking shows your bill and usage when you sign in.")}>
             <input id="su-cust" value={f.customerNo} onChange={set("customerNo")} inputMode="numeric" className={inputCls(!!errors["su-cust"])} placeholder="0000-000-000" />
           </Field>
@@ -154,6 +176,30 @@ export function Signup() {
         </div>
       </Card>
       <PrimaryButton disabled={busy} className="w-full">{busy ? t("가입 중…", "Signing up…") : t("가입하기", "Sign up")}</PrimaryButton>
+      <PassVerify
+        open={verifyOpen}
+        mode="identity"
+        purpose={{ ko: "회원가입 본인확인", en: "Sign-up identity check" }}
+        minAge={14}
+        onClose={() => setVerifyOpen(false)}
+        onVerified={(v) => {
+          setVerifyOpen(false);
+          const owner = telOwner(v.tel);
+          if (owner) {
+            setVerified(null);
+            setErrors((e) => ({
+              ...e,
+              "su-verify": t(
+                `이미 가입된 휴대폰 번호입니다 (아이디 ${maskId(owner)}). 아이디·비밀번호 찾기를 이용해 주세요.`,
+                `This phone already has an account (${maskId(owner)}). Use “Find ID / password”.`,
+              ),
+            }));
+            return;
+          }
+          setVerified(v);
+          setErrors((e) => ({ ...e, "su-verify": "" }));
+        }}
+      />
       <p className="text-center text-[0.875rem] text-ink-500">
         {t("이미 회원이신가요? ", "Already a member? ")}
         <Link href="/login" className="font-bold text-sk-red-600 underline underline-offset-2">{t("로그인", "Log in")}</Link>
@@ -173,7 +219,8 @@ function MyPageInner({ user }: { user: User }) {
   const { lang } = useLang();
   const router = useRouter();
   const welcome = useSearchParams().get("welcome") === "1";
-  const { logout, updateProfile, deleteAccount } = useAuth();
+  const { logout, updateProfile, deleteAccount, telOwner } = useAuth();
+  const [telVerify, setTelVerify] = useState(false);
   const { state } = useStore();
   const [editing, setEditing] = useState(false);
   const [pf, setPf] = useState({ name: pick(user.name, lang), tel: user.tel, email: user.email });
@@ -231,9 +278,31 @@ function MyPageInner({ user }: { user: User }) {
         </div>
         {editing ? (
           <form onSubmit={saveProfile} noValidate className="mt-5 space-y-4 border-t border-ink-100 pt-5">
-            <Field id="pf-name" label={t("이름", "Name")} error={pErr["pf-name"]}><input id="pf-name" value={pf.name} onChange={(e) => setPf((x) => ({ ...x, name: e.target.value }))} className={inputCls(!!pErr["pf-name"])} /></Field>
+            <Field id="pf-name" label={t("이름", "Name")} error={pErr["pf-name"]} help={t("본인인증으로 확인된 이름입니다.", "Confirmed by identity check.")}><input id="pf-name" value={pf.name} readOnly className={`${inputCls(!!pErr["pf-name"])} bg-ink-50 text-ink-600`} /></Field>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field id="pf-tel" label={t("휴대폰", "Mobile")} error={pErr["pf-tel"]}><input id="pf-tel" value={pf.tel} onChange={(e) => setPf((x) => ({ ...x, tel: e.target.value }))} className={inputCls(!!pErr["pf-tel"])} /></Field>
+              <Field id="pf-tel" label={t("휴대폰", "Mobile")} error={pErr["pf-tel"]}>
+                <div className="flex gap-2">
+                  <input id="pf-tel" value={pf.tel} readOnly className={`${inputCls(!!pErr["pf-tel"])} min-w-0 flex-1 bg-ink-50 tabular-nums text-ink-600`} />
+                  <button type="button" onClick={() => setTelVerify(true)} className="min-h-12 shrink-0 rounded-xl border-2 border-ink-200 px-3 text-[0.8125rem] font-bold text-ink-700 hover:border-ink-300">{t("번호 변경", "Change")}</button>
+                </div>
+              </Field>
+              <PassVerify
+                open={telVerify}
+                mode="identity"
+                purpose={{ ko: "휴대폰 번호 변경", en: "Change of phone number" }}
+                name={pf.name}
+                onClose={() => setTelVerify(false)}
+                onVerified={(v) => {
+                  setTelVerify(false);
+                  const owner = telOwner(v.tel);
+                  if (owner && owner !== user.memberId) {
+                    setPErr((x) => ({ ...x, "pf-tel": t("다른 계정에 등록된 번호입니다.", "That number belongs to another account.") }));
+                    return;
+                  }
+                  setPf((x) => ({ ...x, name: v.name, tel: v.tel }));
+                  setPErr((x) => ({ ...x, "pf-tel": "" }));
+                }}
+              />
               <Field id="pf-email" label={t("이메일", "Email")} error={pErr["pf-email"]}><input id="pf-email" value={pf.email} onChange={(e) => setPf((x) => ({ ...x, email: e.target.value }))} className={inputCls(!!pErr["pf-email"])} /></Field>
             </div>
             <div className="flex gap-2">

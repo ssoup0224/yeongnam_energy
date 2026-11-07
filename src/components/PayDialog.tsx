@@ -5,7 +5,9 @@ import { createPortal } from "react-dom";
 import { BANKS, CARDS, EASY_PAY, institutionLabel, paymentMethodLabel, periodLabel, won } from "@/lib/data";
 import { pick, useLang, useT } from "@/lib/i18n";
 import { useStore, type Payment } from "@/lib/store";
+import { useAuth } from "@/lib/auth";
 import { InfoBox, PrimaryButton, RadioCards } from "./form";
+import PassVerify from "./PassVerify";
 import { IconCheck, IconClose, IconCopy } from "./Icons";
 
 type Method = "card" | "easy" | "autopay" | "vaccount";
@@ -13,8 +15,9 @@ type Method = "card" | "easy" | "autopay" | "vaccount";
 /**
  * Mock payment flow. No card or account numbers are entered here — choosing a
  * card company stands in for the issuer's own approval window. Card, easy-pay
- * and registered-account payments are recorded as paid immediately; a
- * virtual-account transfer shows the account to send to.
+ * and registered-account payments are approved with a (simulated) text code to
+ * the payer's phone, then recorded as paid; a virtual-account transfer shows
+ * the account to send to.
  */
 export default function PayDialog({
   open,
@@ -40,13 +43,14 @@ export default function PayDialog({
   const t = useT();
   const { state, addPayment } = useStore();
   const autoPay = state.settings.autoPay;
+  const { user } = useAuth();
 
   const [method, setMethod] = useState<Method | "">("");
   const [card, setCard] = useState("");
   const [installment, setInstallment] = useState("0");
   const [easy, setEasy] = useState("");
   const [error, setError] = useState("");
-  const [phase, setPhase] = useState<"form" | "processing" | "done">("form");
+  const [phase, setPhase] = useState<"form" | "auth" | "processing" | "done">("form");
   const [paid, setPaid] = useState<Payment | null>(null);
   const [copied, setCopied] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -54,7 +58,7 @@ export default function PayDialog({
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && phase !== "processing") onClose();
+      if (e.key === "Escape" && phase !== "processing" && phase !== "auth") onClose();
     };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
@@ -79,6 +83,10 @@ export default function PayDialog({
     if (method === "card" && !card) return setError(t("카드사를 선택해 주세요.", "Choose a card company."));
     if (method === "easy" && !easy) return setError(t("간편결제 서비스를 선택해 주세요.", "Choose an easy-pay service."));
     setError("");
+    setPhase("auth");
+  }
+
+  function approve() {
     setPhase("processing");
     window.setTimeout(() => {
       const m = methodLabel();
@@ -174,7 +182,7 @@ export default function PayDialog({
                     {[2, 3, 6].map((m) => <option key={m} value={String(m)}>{t(`${m}개월`, `${m} months`)}</option>)}
                   </select>
                 </label>
-                <p className="text-[0.75rem] text-ink-400 sm:col-span-2">{t("다음 단계에서 카드사 인증창이 열립니다 (시안에서는 생략).", "The card issuer's own approval window opens next (skipped in this draft).")}</p>
+                <p className="text-[0.75rem] text-ink-400 sm:col-span-2">{t("결제 전 휴대폰 인증번호로 한 번 더 확인합니다.", "You'll confirm with a code sent to your phone before paying.")}</p>
               </div>
             ) : null}
 
@@ -214,6 +222,20 @@ export default function PayDialog({
           </>
         )}
       </div>
+      <PassVerify
+        open={phase === "auth"}
+        mode="otp"
+        purpose={{ ko: "결제 승인", en: "Payment approval" }}
+        amount={amount}
+        tel={user?.tel}
+        name={user ? pick(user.name, lang) : ""}
+        telEditable={!user}
+        onClose={() => {
+          setPhase("form");
+          setError(t("결제 인증이 취소되었습니다. 다시 시도해 주세요.", "Payment verification was cancelled. Please try again."));
+        }}
+        onVerified={approve}
+      />
     </div>,
     document.body,
   );
